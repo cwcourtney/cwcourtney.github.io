@@ -1,0 +1,428 @@
+---
+title: "kNN Parameter Exploration for Predicting Taxi Tip Amounts in NYC"
+author: "Jennifer Nguyen, Courtney Wong, Dara Mai"
+date: "2024-04-09"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+suppressPackageStartupMessages({
+  library(lubridate)
+  library(Hmisc)
+  library(tidyverse)
+  library(caret)
+  library(FNN)
+  library(ggrepel)
+  library(knitr)
+  library(gmodels)
+  library(psych)
+})
+```
+
+# Data Understanding
+
+## Import
+
+First, we load the dataset into a tibble directly from a URL. This dataset contains trip information from [NYC Green Taxi Trip Records for 2018](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) provided by the NYC Taxi and Limousine Commission (TLC). We aim to build a kNN regression model to predict the tip amount for a given ride.
+
+```{r}
+# Import
+df <- read_csv(file = "https://github.com/cwcourtney/DA5020Practicum3Data/raw/main/P3smaller.csv")
+original <- df
+```
+
+## General Exploration
+
+Then, we do a first pass at exploring the data pre-cleaning.
+
+```{r, fig.width=7, fig.height=8}
+# Inspect structure
+str(df, give.attr=FALSE)
+# Inspect distribution
+summary(df)
+hist.data.frame(select(df, -c(lpep_pickup_datetime, lpep_dropoff_datetime)),
+                n.unique=2)
+# Check for missing values
+apply(df, MARGIN=2, function(x) sum(is.na(x)))
+# Investigate distribution of payment types
+table(df$payment_type)
+```
+
+We observe the following:
+
+1. `VendorID`, `store_and_fwd_flag`, `RatecodeID`, `payment_type`, `trip_type` are categorical variables that must be converted into dummy variables for correlation and modeling
+2. A little more than half the data are Credit Card type payments, and the rest are non-Credit. According to the data dictionary, only credit card tips are recorded, so it is would be inaccurate to use non-credit card transactions for the purpose of forecasting tips (their values are recorded as 0 in this dataset when in reality they are missing values).
+3. The entire `ehail_fee` column is ***missing***, and 802 rows are missing 7 columns of data
+4. `PULocationID` and `DOLocationID` are also categorical variables, but we suspect there are too many levels (more than 100) to be useful.
+5. `lpep_pickup_datetime` and `lpep_pickup_datetime` are type POSIXct, which also cannot be directly used as a continuous variable.
+6. While the min values of most features are 0 (logically, as they are dollar amounts), the maximums range from 0.5 to 200. A min/max normalization may make sense.
+
+These will be addressed in the next section.
+
+## Distribution and Outliers
+
+Additionally, we also took a first glance at the ***distribution*** of each feature and observe the following that may be useful for our modeling:
+
+- The pickup and dropoff locations are not uniformly distributed, suggesting there is a difference in popularity among the different regions. Could the popularity of the region be tied to the tip amount?
+- Trip distance, tip amount, fare amount, and total amount are all similarly distributed (right-skew, clustered at lower values).
+- All other variables are either categorical or quite sparse, making their usefulness for our model unlikely.
+- We note some ***outliers*** (or categories with extremely low representation):
+  - Trips with a "yes" under `store_and_fwd_flag` (only 7 of 3986)
+  - Trips with `RatecodeID` of not 1 (2, 3, 4, or 5) are very uncommon (91 of 3986)
+  - Trips with a negative `mta_tax`, `improvement_surcharge`, `fare_amount`, `extra`, or `total_amount` (roughly 10 of 3986)
+- Concerning ***outliers*** in numerical features, listed below are the outliers that were found using the z-score approach. An outlier was considered to be any observation that had a z-score greater than 3.
+  
+```{r outliers}
+# create z score function
+z_score <- function(x) {
+  z <- abs((mean(x)-x))/sd(x) 
+  return(z)
+}
+numeric_columns <- c(8:14, 17, 20)
+
+outliers <- df %>%
+  mutate(across(numeric_columns, z_score, .names = "{.col}_z"))
+
+# function to return outlier row indicies
+filter_cond <- function(x) { return(which(x >= 3))
+}
+# apply outlier function to z-score columns
+out_table <- lapply(outliers[21:29], filter_cond) 
+out_table
+
+```
+
+## Colinearity
+
+Lastly, we create a first-pass ***correlation*** matrix for continuous variables to identify good predictors of tip amount.
+
+```{r}
+
+cor(select(df, -c(lpep_pickup_datetime, lpep_dropoff_datetime, # not numeric
+                  ehail_fee, # all NA
+                  store_and_fwd_flag)), # not numeric
+    use="complete.obs")[,"tip_amount"] %>%
+  sort()
+
+```
+
+# Data Preparation
+
+## Feature Selection
+
+We observed from our colinearity analysis that `payment_type`,  `total_amount`, `trip_distance`, `fare_amount`, and `congestion_surchage` may be good candidates as they are the highest (exceeding 0.25) in ***correlation*** to `tip_amount`. We will repeat this in later sections after cleaning the data as well to confirm this. However, we may need to ***remove `payment_type`*** as previously stated, because tips for only Credit Card payments are recorded according to the data dictionary.
+
+In addition, other features that may be selected to predict tip_amount would be: `tolls_amount`, `MTA_tax`, `improvement_surcharge`, and `extra`. The reason for these selections are that they influence the tip that the customer would receive on their credit card. Our reasoning is that customers may be upset when seeing these extra charges such as toll fees, taxes, or other fees. Subsequently, they may alter their tip depending on the amount of fees/tolls/tax that is included on their final charge.
+
+Concerning categorical variables, we decided that `RatecodeID`, `VendorID`, and `trip_type` were to be included in the modeling. For `RatecodeID`, rates are different dependent on numerous factors. For example, if it was a negotiated fare rate, the taxi driver may get a better tip if the fare is reasonably priced for the customer. Therefore, based on the rate of the taxi ride, it is logical to conclude that there are different rates for trips, and could affect the tip amount. For the `VendorID` feature, different vendors may carry different reputations and thus encourage passengers to tip differently. For the `trip_type` feature, the success of street hailing a cab is more based on chance compared to dispatching, which is relatively straightforward. A poor experience with street hailing may therefore lead to fewer tips. 
+
+The others are omitted due to not being an influence for credit card. It would be `passenger_count`, `store_and_fwd_flag`, `PULocationID`, `DOLocationID`, `lpep_dropoff_datetime`, `lpep_pickup_datetime`, and `ehail_fee`. The `ehail_fee` specifically was entirely missing values and therefore contributed no information to the dataset. The `passenger_count` was excluded because the charge is independent of the total amount charged at the end of the taxi ride. This is supported by the low correlation value between the `tip_amount` and `passenger_count` above. The `PULocationID` and `DOLocationID` were excluded as the location of where you are getting picked up and dropped off does not typically affect a tip. 
+
+The `lpep_dropoff_datetime`, and `lpep_pickup_datetime` features are dates of times of pickup and dropoff. They may have some correlation with tips due to rush hour or busy travel periods. Therefore, they will be used for feature engineering since the original features are of type POSIXct, which cannot be directly used as a continuous variable.
+
+```{r, fig.width=7.5, fig.height=8}
+remove <- c("passenger_count", "store_and_fwd_flag", "PULocationID", "DOLocationID", "lpep_dropoff_datetime", "lpep_pickup_datetime", "ehail_fee")
+df <- df %>% select(-remove)
+pairs.panels(df)
+```
+
+The pairs panel above visualizes the pairwise correlation between all 13 remaining features after elimination. The downward diagonal shows the distribution of each variable, the graphs below the diagonal plot each pair in a scatterplot, and the values above the diagonal indicate the linear correlation coefficient.
+
+## Derived Attributes
+
+Lastly, we propose ***3 new features*** that may be useful in prediction tip amount: trip duration, average trip speed in miles per hour, and whether the trip is during nighttime or daytime.
+
+```{r}
+# Create 3 new features
+tmp <- original %>%
+  mutate(duration = as.numeric(lpep_dropoff_datetime - lpep_pickup_datetime),
+         mph = trip_distance / (duration / 60),
+         nighttime = ifelse(hour(lpep_pickup_datetime) > 17 |
+                              hour(lpep_pickup_datetime) < 7, 1, 0))
+# Re-create correlation matrix
+cor(select(tmp, -c(lpep_pickup_datetime, lpep_dropoff_datetime, # not numeric
+                  ehail_fee, # all NA
+                  store_and_fwd_flag)), # not numeric
+    use="complete.obs")[,"tip_amount"] %>%
+  sort()
+```
+
+Our proposed features have very poor correlation to the tip amount (less than 1%) and will ***likely not be good indicators***. This may be because the trip duration and speed are already baked in to the `fare_amount` variable, as it is based on both time and distance according to the data dictionary. Additionally, the nighttime/daytime feature may also already be baked in (more accurately) by the `extra` feature, which includes the rush hour and overnight charges.
+
+Before moving to the next section, please note that many of these steps must be repeated AFTER cleaning and normalizing the data, and takeaways may change as a result.
+
+## Cleaning
+
+First, we convert categorical variables to factors.
+
+```{r}
+df <- df %>%
+  mutate(VendorID = factor(VendorID),
+         RatecodeID = factor(RatecodeID),
+         payment_type = factor(payment_type),
+         trip_type = factor(trip_type),
+         congestion_surcharge = factor(congestion_surcharge))
+sapply(df, function(x) sum(is.na(x)))
+# Show result
+str(df, give.attr=F)
+```
+
+There are 802 missing values in 5 different columns. However, credit card payments are the only payments that populate an observation in their corresponding `tip_amount` column. Thankfully, when filtered for `payment_type = 1` or for credit cards, these missing values are also filtered out as demonstrated below. 
+
+```{r}
+df <- df %>% filter(payment_type == 1) %>% droplevels() %>% select(-payment_type)
+# Show result
+sapply(df, function(x) sum(is.na(x)))
+```
+
+Concerning outliers, the z-score method was used on the newly filtered to find any observation with a z-score greater than 3 standard deviations. 
+
+```{r}
+numeric_columns <- which(sapply(df, is.numeric))
+
+outliers <- df %>%
+  mutate(across(numeric_columns, z_score, .names = "{.col}_z"))
+
+# function to return outlier row indicies
+filter_cond <- function(x) { return(which(x >= 3))
+}
+# apply outlier function to z-score columns
+out_table <- lapply(outliers[13:20], filter_cond) 
+
+# show data frame with outliers
+outlier_table <- outliers %>% filter(
+  trip_distance_z >= 3 | fare_amount_z >= 3 | 
+  extra_z >= 3 | mta_tax_z >= 3 | tip_amount_z >= 3 | 
+  tolls_amount_z >= 3 | improvement_surcharge_z >3)
+out_percent <- (nrow(outlier_table)/nrow(outliers)) * 100
+
+# impute
+df <- outliers %>% mutate(
+  trip_distance = replace(trip_distance, which(trip_distance_z >= 3), mean(trip_distance, na.rm = TRUE)),
+  fare_amount = replace(fare_amount, which(fare_amount_z >= 3),  mean(fare_amount, na.rm = TRUE)),
+  extra = replace(extra, which(extra_z >= 3), mean(extra, na.rm = TRUE)),
+  mta_tax = replace(mta_tax, which(mta_tax_z >= 3), mean(mta_tax, na.rm = TRUE)),
+  tip_amount = replace(tip_amount, which(tip_amount_z >= 3), mean(tip_amount, na.rm = TRUE)),
+  tolls_amount = replace(tolls_amount, which(tolls_amount_z >= 3),  mean(tolls_amount, na.rm = TRUE)),
+  improvement_surcharge = replace(improvement_surcharge, which(improvement_surcharge_z >= 3), 
+                                  mean(improvement_surcharge, na.rm = TRUE))) %>%
+  select(1:12)
+# Show result
+summary(df)
+```
+
+There were `r nrow(outlier_table)` outliers that constitute `r out_percent`% of the data. Since this is larger than 5%, we decided to mean impute any outliers.
+
+No data transformations were done as kNN modeling does not require normal distributions prior to model building.
+
+## Normalization
+
+```{r}
+# normalize function
+normalize <- function(x) {
+return ((x - min(x)) / (max(x) - min(x)))
+}
+# save target variable in vector to avoid normalization
+tip <- df$tip_amount
+# normalize outlier-free numeric data, keep categorical columns
+df <- as.data.frame(lapply(df, function(col) {
+  if(is.numeric(col)) {
+    normalize(col)
+  } else {
+    col
+  }
+}))
+# add back target variable
+df$tip_amount <- tip
+# Show result
+summary(df)
+```
+
+Data was normalized using min-max normalization on all numeric features in the dataset. A shown in the output, all features now range from 0 to 1 (tip amount is the dependent variable we are trying to predict and thus should not undergo normalization).
+
+## Encoding Categorical Features
+
+```{r}
+# one hot encode RateCodeID , add to df
+encoded_rate <- model.matrix(~ RatecodeID - 1, data = df)
+encoded_rate <- as.data.frame(encoded_rate)
+df<- cbind(df, encoded_rate)
+# remove original RatecodeID 
+df$RatecodeID <- NULL
+encoded_cong <- model.matrix(~ congestion_surcharge - 1, data = df)
+encoded_cong <- as.data.frame(encoded_cong)
+df <- cbind(df, encoded_cong)
+df$congestion_surcharge <- NULL
+# dummy code vendorID, trip_type
+df <- df %>%
+  mutate(VendorID = ifelse(VendorID == 1, 0, 1),
+         trip_type = ifelse(trip_type == 1, 0, 1))
+# Show result
+str(df)
+```
+
+The `RatecodeID` and `congestion_surcharge` features were one hot encoded since they had more than 2 levels. The `VendorID` and `trip_type` features were dummy encoded since they only had 2 levels.
+
+## Random Partitioning in Testing and Training Sets
+
+Lastly, we split the data into the recommended 80%/20% for the training set and testing set. This is general practice as a good starting point. However, we attempt a bonus step in the very last section to investigate the impact of this decision further.
+
+```{r}
+set.seed(1)
+# shuffle data
+df <- df[sample(nrow(df)),]
+
+# partition data
+validation <- createDataPartition(df$tip_amount, p = .2, list = FALSE)
+# create training and test data
+data_test <- df[validation,]
+data_train <- df[-validation,]
+# Show resulting df dimensions
+dim(data_test)
+dim(data_train)
+```
+
+# Data Modeling with kNN
+
+## Build Model
+
+Below, we create a function that takes in a training dataset to train a kNN model using the inputted k value, applies the newly trained model to the provided testing dataset, and returns the mean squared error (MSE). We use the `FNN` package to achieve this.
+
+```{r}
+knn_predict <- function(data_train, data_test, k) {
+  train_actual <- data_train$tip_amount
+  train <- data_train %>% select(-tip_amount)
+  test_actual <- data_test$tip_amount
+  test <- data_test %>% select(-tip_amount)
+  pred <- knn.reg(train,test, train_actual, k)$pred
+  mse <- mean((test_actual - pred)^2)
+  return(mse)
+}
+```
+
+We see the function in action below, with a truncated dataset:
+
+```{r}
+data_train_smaller <- head(data_train, n=40)
+data_test_smaller <- head(data_test, n=10)
+
+knn_predict(data_train_smaller, data_test_smaller, k=3)
+```
+
+## Assess Model
+
+```{r, warning = FALSE}
+mse_values <- numeric(60)
+
+for (i in 1:60) {
+  k <- i  
+  mse_values[i] <- knn_predict(data_train, data_test, k)
+}
+
+k_mse <- data.frame(
+  k = 1:60,
+  mse = mse_values)
+min.mse <- min(k_mse$mse)
+# mse vs. k plot
+ggplot(k_mse, aes(x = k, y = mse, 
+       label=ifelse(mse==min.mse, paste("Min:", round(mse, 4)), NA))) + 
+  geom_line() + 
+  labs(title = "K vs MSE",
+       y = "Mean Squared Error (MSE)") + 
+  geom_label_repel(size=3, box.padding=1) +
+  theme_bw()
+```
+
+The square root of the number of observations, which is approximately 41, is typically the k-value used in kNN modeling. For the loop, we wanted to explore a large range of values and made sure to use a range that contains the square root. From the plot above, you can see that the MSE rapidly decreases until reaching the minimum MSE of `r min.mse`. Afterwards, the MSE increases gradually as k increases before slowly plateauing. The graph indicates that the most optimal k-value is `r which.min(k_mse$mse)` with the lowest MSE of `r min.mse`.
+
+# Tune Parameter k
+
+Using this optimized value of k, the kNN model was used to predict values for `tip_amount` on the testing dataset.
+
+```{r}
+# ideal k pred and plot
+k_pred <- knn.reg(data_train[, !names(data_train) %in% "tip_amount"],
+                   data_test[, !names(data_train) %in% "tip_amount"],
+                   data_train$tip_amount, which.min(k_mse$mse))$pred
+preds <- data.frame(
+  actual = data_test$tip_amount,
+  pred = k_pred
+)
+ggplot(preds, aes(x = actual, y = pred)) + geom_point() +
+  labs(x = "Actual tip amounts", y = "Predicted tip amounts",
+       title = "Predicted vs. Actual tip amounts for k = 5",
+       caption = "Blue dotted line represents line of identity") + 
+  geom_abline(slope=1, intercept=0, linetype="dashed", color="blue") +
+  theme_bw()
+```
+
+We visualized the predicted tip vs. the actual tip amounts in a scatterplot. If we were to have 100% accuracy or a 0% MSE, all the values would be in a single positive line. However since there is a non-zero MSE, there is some distribution displayed. Interestingly, the model does not appear to predict cases of $0 tips very well, suggesting a potential limitation of the model. Other avenues that might be worth exploring to predict tip data would be multiple linear regression or other machine learning methods. 
+
+# Assess Impact of Training Split Proportion on MSE
+
+Analyzing relationship between training split proportion and MSE
+
+```{r, warning=FALSE}
+
+set.seed(1) # for reproducibility
+
+# Define percentage of total dataset dedicated for training: 80%
+train_pct_vec = seq(.1, .9, by=0.1)
+
+pct_vs_k_vs_mse = data.frame()
+
+for (train_pct in train_pct_vec) {
+  # Randomly sample
+  ind <- sample(nrow(df), floor(train_pct * nrow(df))) # indices randomly selected
+  data_train <- df[ind,]
+  data_test <- df[-ind,]
+  
+  # Recommended starting place: sqrt of # training cases
+  floor(sqrt(nrow(data_train)))
+  # Ensure range includes that
+  k_vals <- seq(from=1, to=60, by=1)
+  
+  k_opti_results <- data.frame(k_vals = k_vals,
+             mse = -1)
+  
+  for (ii in 1:length(k_vals)) {
+    k_opti_results$mse[ii] <- knn_predict(data_train, data_test, k_vals[ii])
+  }
+  
+  pct_vs_k_vs_mse <- k_opti_results %>%
+    mutate(train_prop = train_pct) %>%
+    rbind(pct_vs_k_vs_mse)
+  
+}
+
+pct_vs_k_vs_mse %>%
+  ggplot(aes(x=k_vals, y=mse, group=train_prop, color=factor(train_prop))) +
+  geom_line(size=1) +
+  theme_bw() +
+  labs(x="k",
+       y="Mean Squared Error in $ Tip Amount",
+       color="Training Data\nProportion",
+       title="k-vs-MSE curves for varying proportion splits of training/testing data")
+
+pct_vs_k_vs_mse %>%
+  group_by(train_prop) %>%
+  filter(mse == min(mse)) %>%
+  arrange(train_prop) %>%
+  kable(col.names=c("k","Minimum MSE","Training Data Proportion"))
+
+```
+
+To evaluate the effect of the percentage split for training and test sets, we tested various partitions and their resulting MSE based on k-values of 1 to 60. From the graph, it looks like the 0.8 split makes the best predictions for the model as it has the lowest MSE of 1.583319 with a k-value of 4. Our original model with the 0.8 split from question 4 had a MSE of `r min.mse` with a k-value of `r which.min(k_mse$mse)`. This is similar to our findings from the model in question 4. Differences in MSE values may be due to randomization of the sample or the split itself. 
+
+We also notice a trend in how rapidly MSE drops off as k becomes larger. With training data proportions of 0.7 and 0.8, the MSE drops off most rapidly and stays quite flat, suggesting it is less sensitive to the chosen value of k. For the lowest proportion models, 0.1 through 0.3, the MSE drops off less quickly with respect to k, the minimum point varies greatly among them, and the remainder of the line fluctuates, suggesting that fine-tuning k is essential when using lower-percentage splits of training data.
+
+The highest-proportion model, 0.9, is a stark outlier with the highest MSE by far for nearly all values of k. This suggests that using too much data for training purposes and leaving too little for testing purposes can actually make the model less accurate.

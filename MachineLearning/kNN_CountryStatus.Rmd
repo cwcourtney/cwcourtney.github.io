@@ -1,0 +1,412 @@
+---
+title: "kNN parameter exploration for classifying country status using life expectancy data"
+author: "Wong, Courtney"
+date: "2024-10-05"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	message = FALSE
+)
+```
+
+```{r lib}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(knitr)
+  library(Hmisc)
+  library(reshape2)
+  library(class)
+})
+```
+
+# Data Understanding
+
+## Exploration
+
+Below, we import and explore the life expectancy data provided by the WHO ([LifeExpectancyData.csv](https://s3.us-east-2.amazonaws.com/artificium.us/datasets/LifeExpectancyData.csv)) using various methods and make some observations:
+
+-   Confirm correct data import by viewing the first 5 observations with `head()`.
+-   Inspect the structure of the data such as data types and values with `str()`. Of the 22 features, only 2 are non-numeric.
+-   Inspect the distribution of each feature, excluding the country name, using `hist.data.frame()` from `Hmisc`. There is a wide variety in distributions among the different features. Few appear to be normal.
+-   Inspect the number and percent of missing values for each feature, arranged in decreasing order. There are 7 features with more than 5% of the data missing.
+-   Inspect pairs of features with a Spearman correlation coefficient greater than 0.8, arranged in decreasing order. There are 8 pairs that appear to be correlated.
+
+```{r Q1_ExploreData}
+# Import CSV
+df <- read.csv("https://s3.us-east-2.amazonaws.com/artificium.us/datasets/LifeExpectancyData.csv",
+               stringsAsFactors = FALSE)
+# Inspect first 5 rows
+head(df, n=5)
+# Inspect the structure
+str(df)
+# Inspect the distribution, exclude country name
+hist.data.frame(df[2:13], n.unique=2)
+hist.data.frame(df[14:22], n.unique=2)
+# Check for missing values
+missing <- apply(df, MARGIN=2, function(x) sum(is.na(x))) %>%
+  as.data.frame() %>%
+  rename(NumMissing = 1) %>%
+  mutate(PctMissing = NumMissing / nrow(df) * 100) %>%
+  arrange(-PctMissing)
+kable(missing)
+# Inspect pairs whose spearman correlation > 0.8
+cor(df[c(-1,-2,-3)], use="pairwise.complete.obs", method="spearman") %>%
+  melt() %>%
+  filter(value > 0.8 | value < -0.8,
+         Var1 != Var2) %>%
+  group_by(value) %>%
+  slice_head(n=1) %>%
+  arrange(-abs(value)) %>%
+  rename(SpearmanCor = value) %>%
+  kable()
+```
+
+To further investigate the missing values, we check the distribution of the features with more than 10% missing, colored by the feature we wish to build a predictive model for (Country Status).
+
+```{r Q1_MissingValues, fig.width=8, fig.height=2, results="hide", fig.keep="all"}
+map(rownames(missing[missing$PctMissing>10,]), ~ {
+  g <- df %>%
+    ggplot(aes(x=!!sym(.x), fill=Status)) +
+    geom_density(alpha=.2) +
+    theme_bw()
+  if (.x %in% c("Population", "GDP")) {
+    g + scale_x_log10()
+  } else {
+    g
+  }
+})
+```
+
+The dependency of these features on the target variable is taken into account in the next phase when we prepare the data.
+
+# Data Preparation
+
+## Imputation of Missing Values
+
+Since Hepatitis and GDP appear extremely dependent on Country status, we decide to impute the median by country status. Otherwise, the value would be skewed toward whichever status is more represented (developing countries are 4x more represented than developed countries), and this would negatively impact the predictive power of the model. We impute Population with median normally. We choose the median instead of the mean to be less skewed by outliers. Lastly, as we have a decently large dataset, we can afford to omit the remaining observations with a missing value.
+
+```{r Q1_Imputation, fig.width=8, fig.height=2, results="hide", fig.keep="all"}
+df <- df %>%
+  # Impute population to overall median
+  mutate(Population = ifelse(is.na(Population), median(Population, na.rm=TRUE), Population)) %>%
+  # Impute the rest by median within country status
+  group_by(Status) %>%
+  mutate(Hepatitis.B = ifelse(is.na(Hepatitis.B), median(Hepatitis.B, na.rm=TRUE), Hepatitis.B),
+         GDP = ifelse(is.na(GDP), median(GDP, na.rm=TRUE), GDP),
+         Schooling = ifelse(is.na(Schooling), median(Schooling, na.rm=TRUE), Schooling)) %>%
+  # Exclude the rest, small portion of dataset
+  na.omit
+
+map(rownames(missing[missing$PctMissing>10,]), ~ {
+  g <- df %>%
+    ggplot(aes(x=!!sym(.x), fill=Status)) +
+    geom_density(alpha=.2) +
+    theme_bw()
+  if (.x %in% c("Population", "GDP")) {
+    g + scale_x_log10()
+  } else {
+    g
+  }
+})
+```
+
+The graphs above show the newly imputed dataset, understandably with a higher peak at the median value, but importantly the distinction between the two statuses are preserved. We are now left with `r nrow(df)` datapoints after handling missing values.
+
+## Derived Attribute for Per Capita Mortality
+
+Next, we create a derived attribute for per capital mortality and compare the rate between Developing versus Developed countries. The source file represents adult deaths per 1000 and infant deaths in absolute count, so we calculate the per-capita mortality rate as follows: `Adult.Mortality/1000 + infant.deaths/Population`. Error bars represent mean +/- standard deviation within each country status group.
+
+```{r Q2_StatusBarChart}
+# Calculate mortality per capita
+df$Mortality.Rate = df$Adult.Mortality/1000 + df$infant.deaths/df$Population
+
+df %>%
+  # Descriptive statistics by Status type
+  group_by(Status) %>%
+  dplyr::summarize(Mortality.Rate_avg = mean(Mortality.Rate),
+            Mortality.Rate_sd = sd(Mortality.Rate)) %>%
+  ggplot(aes(x=Status, y=Mortality.Rate_avg, fill=Status)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(
+    ymin = Mortality.Rate_avg - Mortality.Rate_sd,
+    ymax = Mortality.Rate_avg + Mortality.Rate_sd,
+    width=.1
+  )) +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Comparison of average mortality rate in developed vs developing countries",
+         y = "Average Mortality Rate")
+```
+
+As the calculated mean is a single value and not informative of the distribution of points, and the error bars hint at the noisiness of the data, we also opt to display the data as a boxplot, where the box represents the IQR, the center line represents the median, the whiskers represent the range, and the points represent potential outliers that are beyond 1.5\*IQR from the median.
+
+```{r Q2_StatusBoxPlot}
+df %>%
+  ggplot(aes(x=Status, y=Mortality.Rate, fill=Status)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(title = "Comparison of per-capita mortality rates in developed vs developing countries",
+         y = "Mortality Per Capita")
+```
+
+From both plots, we can observe that both the statistical mean and the median for Per Capita Mortality is higher in Developing countries than in Developed countries. This aligns with our pre-conceived notions about healthcare access in developed versus developing countries, but the noisiness of the data, as indicated by the long whiskers and large IQR in the second plot and the error bars in the first plot, prompts for further analysis to determine whether this difference is statistically significant.
+
+To do this, we first check for normality both visually and with a test on both datasets, shown below.
+
+```{r Q3_ViewDistribution}
+map(unique(df$Status), ~ {
+  df %>%
+    filter(Status == .x) %>%
+    ggplot(aes(x=Mortality.Rate)) +
+    geom_histogram() +
+    theme_bw() +
+    scale_x_continuous(labels = scales::percent) +
+    labs(title = paste("Distribution of Per Capita Mortality Rates in", .x, "Countries"),
+         subtitle = paste("Countries represented:", n_distinct(filter(df, Status==.x)$Country),
+                          "| Year range:", min(filter(df, Status==.x)$Year), "-",
+                          max(filter(df, Status==.x)$Year)),
+         x = "Per Capita Mortality Rate",
+         y = "Count")
+})
+```
+
+We use a Shapiro Wilk normality test below on both original and log-transformed mortality rates by country status to check for normality. The sample size is appropriate for this test as it is between 3 and 5000.
+
+```{r Q3_NormalityTest}
+t1 <- shapiro.test(df[df$Status=="Developing",]$Mortality.Rate)
+t2 <- shapiro.test(df[df$Status=="Developed",]$Mortality.Rate)
+t1
+t2
+t3 <- shapiro.test(log10(df[df$Status=="Developing",]$Mortality.Rate))
+t4 <- shapiro.test(log10(df[df$Status=="Developed",]$Mortality.Rate))
+t3
+t4
+```
+
+The test returns a p value of **`r t1$p.value`** for Developing countries and **`r t2$p.value`** for Developed countries. With an alpha of 0.05, we reject the null hypothesis and conclude that the distributions of both datasets are significantly different from normal. We also confirm as expected that the non-transformed data return the same conclusion (p values of **`r t3$p.value`** and **`r t4$p.value`**). Thus, a Wilcoxon Rank-Sum test would be approporate to test whether the two datasets are statistically different in their means (as opposed to a t-test, which requires that both datasets be normally distributed).
+
+```{r Q3_WilcoxonRankSum}
+t <- wilcox.test(df[df$Status=="Developing",]$Mortality.Rate,
+            df[df$Status=="Developed",]$Mortality.Rate)
+t
+```
+
+The test returns a p value of **`r t$p.value`**. With an alpha of 0.05, we reject the null hypothesis and conclude that per-capita mortality rates are indeed distributed differently in developing versus developed countries. This suggests it may be a useful feature for our kNN model.
+
+## Identification of Outliers
+
+Next, we analyze outliers in each column (excluding the Country name and Status which are non-numerical as well as the year). We define an outlier as any value with an absolute Z-score of greater than 2.8 (i.e. greater than 2.8 standard deviations from the mean). We show all outliers below:
+
+```{r Q5_IndexOutliersFunction}
+index_outliers <- function(x) {
+  x <- x[!is.na(x)]
+  x_mean <- mean(x)
+  x_sd <- sd(x)
+  z_scores <- abs(x - x_mean) / x_sd
+  # list("outliers" = x[z_scores > 2.8],
+  #      "remaining" = x[z_scores <= 2.8],
+  #      "indices" = z_scores > 2.8)
+  return(z_scores > 2.8)
+}
+lapply(df[-c(1,2,3)], function(x) {x[index_outliers(x)]})
+```
+
+The table below summarizes the number and percent of each column that are outliers:
+
+```{r Q5_OutlierTable}
+outlier.summ <- lapply(df[-c(1,2,3)], function(x) { c(
+  NumOutliers = length(x[index_outliers(x)]),
+  PctOutliers = round(length(x[index_outliers(x)]) / length(x) * 100, 2)
+  )}) %>%
+  as.data.frame() %>%
+  t() %>%
+  as.data.frame() %>%
+  arrange(-PctOutliers)
+kable(outlier.summ)
+```
+
+Only 3 features have more than 5% outliers: `Hepatitis.B`, `Polio`, and `Diphtheria`. All outlier values originate from the small peak on the far left of the distribution, shown below. Considering that both developed and developing countries have this small peak and that the key distinguishing feature is the far right of the curve, it is reasonable to remove these observations. We choose to leave the remaining outliers as they make up such a small proportion of the data and are unlikely to sway the general trend. Another option is imputation, but we believe it is ill-advised to fabricate values when values already exist, and our earlier imputation of missing values has already brought the data much closer to the median.
+
+```{r Q6_OutlierPlot, fig.width=6, fig.height=2}
+map(rownames(outlier.summ[outlier.summ$PctOutliers>5,]), ~ {
+  df %>%
+  ggplot(aes(x=!!sym(.x), color=Status)) +
+  geom_density() +
+  theme_bw()
+})
+```
+
+
+```{r Q6_TrimOutliers}
+mask <- lapply(df[c("Hepatitis.B", "Polio", "Diphtheria")], function(x) {index_outliers(x)}) # list of outlier logicals per feature
+mask <- bind_rows(mask) # convert to dataframe
+mask <- apply(mask, MARGIN=1, FUN=any) # check every row for an outlier in any feature
+df <- df[!mask,]
+```
+
+To conclude, we have decided to eliminate observations with an outlier value for `Hepatitis.B`, `Polio`, or `Diphtheria` because these outliers constitute slightly greater than 5% of the column and do not appear to be very distinct in their distribution between developed vs developing countries. We have left the remaining outliers as they are small enough in number to have little impact on the overall trend. This leaves us with `r nrow(df)` observations.
+
+## Z-Score Normalization
+
+In this next phase, we prepare the data first by normalizing all numeric columns (i.e. everything except Country name and Status) using Z-score standardization. This is an important step because we do not want values that are intrinsically higher in magnitude, such as a year (thousands) or population (in hundreds of thousands) to shadow values that are intrinsically lower in magnitude, such as a rate (between 0 and 1) or counts of cases. We accomplish this by using `lapply()` to normalize every column: subtract the column's mean then divide by the column's standard deviation.
+
+```{r Q6_ZscoreNormalization}
+# Create function
+normalize <- function(x) {
+  (x-mean(x, na.rm=TRUE))/sd(x, na.rm=TRUE)
+}
+# Apply to dataframe
+# NOTE: Exclude the id column and the diagnosis column
+df.norm <- cbind(Country = df$Country,
+                 Status = df$Status,
+                 as.data.frame(lapply(df[,c(-1, -3)], normalize)))
+```
+
+## Derived Attribute for Disease
+
+Next, we add a new, derived feature to the dataframe called `disease` that is the sum of the columns `Hepatitis.B`, `Measles`, `Polio`, `HIV.AIDS`, and `Diphtheria`. Note that we first calculate this from the un-normalized data then normalize the new column before adding it to the dataset. Recall that some of these diseases were correlated in our earlier finding. Also recall that roughly 20% of `Hepatitis.B` values were missing and addressed via mean-imputation.
+
+```{r Q7_DiseaseFeature}
+df$Disease <- df$Hepatitis.B + df$Measles + df$Polio + df$HIV.AIDS + df$Diphtheria
+df.norm$Disease <- normalize(df$Disease)
+head(df.norm[c("Hepatitis.B", "Measles", "Polio", "HIV.AIDS", "Diphtheria", "Disease")], n=5) %>% kable()
+```
+
+## Sampling Training and Validation Data
+
+Next, we split the dataset into Developing and Developed countries, randomly sample 15% of each and designate them as the validation set, and designate the remaining as the testing set. We confirm the distribution with a table.
+
+```{r Q8_SplitData}
+split_train_val <- function(x, train_pct) {
+  # Generate random indices
+  rand_ind <- sample(seq(1,nrow(x)),
+         size = floor(train_pct * nrow(x)),
+         replace = FALSE)
+  # Split
+  df.train <- x[rand_ind,]
+  df.val <- x[-rand_ind,]
+  list(train = df.train, val = df.val)
+}
+
+# Segregate Developing and Developed
+df_developing <- filter(df.norm, Status=="Developing")
+df_developed <- filter(df.norm, Status=="Developed")
+# Set seed to make reproducible
+set.seed(-1)
+# Split both
+developing <- split_train_val(df_developing, train_pct=0.85)
+developed <- split_train_val(df_developed, train_pct=0.85)
+# Merge into one train and one test set
+df.train <- rbind(developing$train, developed$train)
+df.val <- rbind(developing$val, developed$val)
+
+# Confirm
+t <- rbind(table(df.norm$Status), table(df.train$Status), table(df.val$Status))
+rownames(t) = c("Original", "TrainingSet", "ValidationSet")
+kable(t)
+```
+
+# Predictive Modeling with kNN
+
+Next, we apply the `knn()` function from `class` with `k=6` to predict the country status for the following new data point.
+
+Life expectancy = 67.4 | Adult Mortality = 293 | infant deaths = 4 | Alcohol = 2.68 | percentage expenditure = 40.7 | Hepatitis B = 40 |Measles  = 671 | BMI = 14.2 | GDP = 687 | under-five deaths  = 211 | Polio = 20 | Diphtheria = 97
+
+The following steps were taken:
+
+1. Format the new point as a dataframe and impute missing values with the median of the original dataset
+2. Normalize the new point using the same previous method by pulling the previously calculated mean and standard deviation of each feature
+3. Supply the previously constructed training set (with Status, the target variable, and Country, a non-numeric variable) dropped, the new point as the test set (again with Status and Country dropped), the Status column of the new point as the true classification (formatted into a factor first), and 6 as the k value
+
+```{r Q9_KNN}
+# Create a new point with some defined values and the rest median imputed
+new_point <- lapply(df, FUN=median) %>%
+  as.data.frame()
+new_point$Life.expectancy = 67.4
+new_point$Adult.Mortality = 293
+new_point$infant.deaths = 4
+new_point$Alcohol = 2.68
+new_point$percentage.expenditure = 40.7
+new_point$Hepatitis.B = 40
+new_point$Measles = 671
+new_point$BMI = 14.2
+new_point$GDP = 687
+new_point$under.five.deaths = 211
+new_point$Polio = 20
+new_point$Diphtheria = 97
+
+# Normalize the same way
+means <- lapply(df, FUN=mean)
+sds <- lapply(df, FUN=sd)
+new_point <- rbind(new_point, means, sds) %>%
+  t() %>%
+  as.data.frame() %>%
+  rename(value = V1, means = V2, sds = V3) %>%
+  mutate(normalized = (value - means) / sds) %>%
+  select(normalized) %>%
+  t() %>%
+  as.data.frame()
+
+model <- knn(train = df.train[-c(1,2)], # drop status and country
+             test = rbind(df.val, new_point)[-c(1,2)], # drop status and country
+             cl = factor(df.train$Status), # convert to factor
+             k = 6)
+
+```
+
+The model predicts this new datapoint belongs to the country status: `r as.character(model[nrow(df.val)+1])`
+
+# Model Evaluation
+
+Below, we test values of k from 3 to 10 and plot the resulting accuracy of the model (percentage of correction classifications with the validation set).
+
+```{r Q10_ModelAccuracy}
+set.seed(-1)
+accuracies <- map_df(seq(3,10), function(x) {
+  model <- knn(train = df.train[-c(1,2)], # drop status and country
+             test = df.val[-c(1,2)], # drop status and country
+             cl = factor(df.train$Status), # convert to factor
+             k = x)
+  list(k = x,
+       accuracy = sum(model == factor(df.val$Status))/nrow(df.val))
+})
+accuracies %>%
+  ggplot(aes(x=k, y=accuracy)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  scale_y_continuous(labels=scales::percent) +
+  labs(title = "Analysis of kNN accuracy with a range of k values")
+```
+
+Out of curiosity, since the recommended value of k is typically the square root of the number of datapoints in the training set, we extend this exercise further:
+
+```{r Q10_ModelAccuracyExtended}
+set.seed(-1)
+accuracies <- map_df(seq(3,sqrt(nrow(df.train))), function(x) {
+  model <- knn(train = df.train[-c(1,2)], # drop status and country
+             test = df.val[-c(1,2)], # drop status and country
+             cl = factor(df.train$Status), # convert to factor
+             k = x)
+  list(k = x,
+       accuracy = sum(model == factor(df.val$Status))/nrow(df.val))
+})
+accuracies %>%
+  ggplot(aes(x=k, y=accuracy)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  scale_y_continuous(labels=scales::percent) +
+  labs(title = "Analysis of kNN accuracy with a range of k values")
+```
+
+We can see from both plots that a k value of `r slice_max(accuracies, accuracy)$k` produces the most accurate prediction, and accuracy trends downward when increasing k from there. This is similar to the k value we selected for our prediction in the previous section. Considering that our sample sizes are `r nrow(df.train)` and `r nrow(df.val)` for the training and validation sets respectively, this relatively small optimal k value indicates that features distinguishing developed versus developing countries are quite distinct. Overall, our model appears to be quite accurate.

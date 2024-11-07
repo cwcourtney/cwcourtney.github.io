@@ -1,0 +1,215 @@
+---
+title: "Predicting Shucked Weight of Abalones With a Custom kNN Regression Model"
+author: "Wong, Courtney"
+date: "2024-10-05"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	message = FALSE
+)
+```
+
+```{r lib}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(knitr)
+  library(Hmisc)
+  library(reshape2)
+  library(psych)
+})
+```
+
+# Data Import and Exploration
+
+We first import data directly from the URL, then extract the Shucked Weight values into a separate vector as the target data.
+
+```{r Q1_DataImport}
+df <- read.csv("https://s3.us-east-2.amazonaws.com/artificium.us/datasets/abalone.csv")
+target_data <- select(df, ShuckedWeight)
+train_data <- select(df, -ShuckedWeight)
+```
+
+We do some initial exploration below on any data distribution, missing values, and colinearities. We observe that there are no missing values in this dataset and that the data contain many highly interrelated features.
+
+```{r}
+str(df)
+summary(df)
+# Distribution
+hist.data.frame(df)
+# Check for missing values
+missing <- apply(df, MARGIN=2, function(x) sum(is.na(x))) %>%
+  as.data.frame() %>%
+  rename(NumMissing = 1) %>%
+  mutate(PctMissing = NumMissing / nrow(df) * 100) %>%
+  arrange(-PctMissing)
+kable(missing)
+# Inspect colinearity
+pairs.panels(df[-9])
+```
+
+# Data Preparation
+
+## Encoding Categorical Variables
+
+Next, we encode the single non-numeric column, Sex, using one-hot encoding. This approach is especially amenable to the min-max normalization we will be performing in the next step because it is already on a scale of 0 to 1. Furthermore, it is a straightforward way to convert a binary categorical variable (male and female) into 1 or 0.
+
+```{r Q2_Encode}
+train_data$Sex <- ifelse(train_data$Sex == "M", 1, 0)
+```
+
+## Min-Max Normalization
+
+Then, we normalize all the columns (all numeric) using min-max normalization, where we subtract the column's minimum then divide by the column's range. Note that the Shucked Weight is not normalized, so that we do not need to invert the normalization after predicting a value.
+
+```{r Q3_MinMaxNorm}
+train_data.norm <- lapply(train_data, function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}) %>% as.data.frame()
+```
+
+# Data Modeling with Custom KNN Regression Function
+
+Then, we create a custom KNN regression function to predict the shucked weight, a continuous variable, given the other features. This involves the following:
+
+1. Check inputs: column names match between the new data and training data, row counts match between the target data and training data, and no NAs in any input.
+2. For each row of new data, calculate its Euclidean distance to each row of the training set. Obtain the smallest k distances (the k nearest neighbors), then calculate their average Shucked Weight.
+3. Return the predicted Shucked Weight for each row of new data, as a vector.
+
+```{r Q4_KNNfunction}
+euclidean_dist <- function(v1, v2) {
+  sqrt(sum((v1-v2)^2))
+}
+
+knn.reg <- function(new_data, target_data, train_data, k) {
+  # new_data: df with new cases
+  # target_data: df with single column of expected outcome of train_data
+  # train_data: df with normalized and encoded features that correspond to values in target_data
+  # k: number of nearest neighbors to perform KNN regression on
+  
+  # Check that column names match
+  if (!identical(colnames(new_data), colnames(train_data))) {
+    stop("Column names of new_data and train_data must match")
+  }
+  
+  # Check target_data length matches train_data length
+  if (nrow(target_data) != nrow(train_data)) {
+    stop("Row count of target_data and train_data must match")
+  }
+  
+  # Check for any NA
+  if (anyNA(new_data) || anyNA(target_data) || anyNA(train_data)) {
+    stop("Inputs must not contain any NA values")
+  }
+  
+  # Calculate a distance vector for each new data point to the train data values
+  predictions <- map(seq(1,nrow(new_data)), function(ii) {
+    distances <- apply(train_data, MARGIN=1, function(row) {
+      euclidean_dist(as.numeric(row), as.numeric(new_data[ii,]))
+      })
+    # Get the indices of the k nearest neighbors
+    nn_ind <- order(distances)[1:k]
+    # Get the values of those k nearest neighbors
+    nn_vals <- target_data[nn_ind,]
+    # Return a simple average (regression version of kNN)
+    mean(nn_vals)
+  })
+  
+  # Return as a vector
+  return(unlist(predictions))
+}
+```
+
+We demonstrate our custom function on 10 randomly generated new datapoints with values for each feature that are within the range of their respective columns.
+
+```{r Q4_TestKNNfunction}
+set.seed(-1)
+# Generate random data
+random_data <- lapply(train_data.norm, function(column, n=10) {
+    # Generate n random values within the min and max of the column
+    runif(n, min = min(column), max = max(column))
+  }) %>%
+  as.data.frame() %>%
+  mutate(Sex = round(Sex)) # convert back to 0 or 1
+# Run knn.reg
+predictions <- knn.reg(random_data, target_data, train_data.norm, k=5)
+cbind(random_data, predictions) %>% round(digits=2) %>% kable()
+```
+
+# Forecasting the Shucked Weight of a New Abalone
+
+Next, we forecast the Shucked Weight of a new abalone with the following characteristics, using a k of 3, with our custom function:
+
+Sex: M | Length: 0.38 | Diameter: 0.490 | Height: 0.231 | Whole weight: 0.4653 | Viscera weight: 0.0847 | Shell weight: 0.17 | Rings: 11
+
+```{r Q5_Forecast}
+new_abalone <- data.frame(
+  Length = 0.38,
+  Diameter = 0.490,
+  Height = 0.231,
+  VisceraWeight = 0.0847,
+  ShellWeight = 0.17,
+  WholeWeight = 0.4653,
+  NumRings = 11,
+  Sex = 1
+)
+# Normalize
+temp_train <- lapply(rbind(new_abalone, train_data), function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}) %>% as.data.frame()
+# Run knn.reg
+prediction <- knn.reg(temp_train[1,], target_data, temp_train[-1,], 3)
+```
+
+Note that we first normalize the values using the same min/max normalization before running KNN. Our model predicts that this abalone will have a shucked weight of `r round(prediction,2)` grams.
+
+# Assess Model Accuracy
+
+Lastly, we assess the accuracy of our model by doing the following:
+
+1. Split data into training (80%) and testing (20%)
+2. Run our custom algorithm, making sure to separate out the target variable and feeding the inputs correctly. We use a k value of 3 here.
+3. Compare the predicted output back to the actual values and calculate the MSE (Mean Squared Error).
+
+```{r Q6_AssessModel}
+# Split data
+split_train_val <- function(x, train_pct) {
+  # Generate random indices
+  rand_ind <- sample(seq(1,nrow(x)),
+         size = floor(train_pct * nrow(x)),
+         replace = FALSE)
+  # Split
+  df.train <- x[rand_ind,]
+  df.val <- x[-rand_ind,]
+  list(train = df.train, val = df.val)
+}
+split_data <- split_train_val(cbind(target_data, train_data.norm), train_pct=0.8)
+df.train <- split_data$train
+df.val <- split_data$val
+# Run knn.reg
+start <- proc.time()
+predictions <- knn.reg(df.val[,-1], df.train[1], df.train[,-1], 3)
+elap <- (proc.time() - start)["elapsed"]
+# Assess accuracy with MSE
+assess <- cbind(df.val[1], predictions)
+mse <- assess %>%
+  mutate(SqErr = (predictions - ShuckedWeight)^2) %>%
+  select(SqErr) %>% sum()
+assess %>%
+  ggplot(aes(x=ShuckedWeight, y=predictions)) +
+  geom_point() +
+  theme_bw() +
+  geom_abline(slope=1, linetype="dashed", color="red") +
+  labs(x = "Actual Shucked Weight",
+       y = "KNN Predicted Shucked Weight",
+       title = "Actual vs Predicted shucked oyster weight using KNN regression, k=3")
+```
+
+We trained the model with `r nrow(df.train)` datapoints and validated with `r nrow(df.val)` datapoints. The total time elapsed to both train and create predictions for the validation set was `r elap` seconds. The calculated MSE of our validation set's prediction values against the actual was `r mse`. The plot above shows the actual versus predicted values from running our model.
