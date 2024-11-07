@@ -2,10 +2,7 @@
 title: "cwcourtney.github.io"
 author: "Courtney Wong"
 date: "`r Sys.Date()`"
-output:
-  html_document:
-    toc: yes
-    toc_float: yes
+output: html_document
 ---
 
 # Machine Learning Projects
@@ -17,3 +14,5 @@ output:
 
 # Bioinformatics Projects
 
+-   [Differential Expression Analysis with DESeq2](./BINF/231004_DiffExpAnalysis/methodsResults.html)
+-   [Variant Calling with DeepVariant](./BINF/231124_VariantCalling/MethodsVariantCalling.html)

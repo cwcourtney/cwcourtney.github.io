@@ -1,0 +1,2396 @@
+Starting script Tue Oct 24 10:32:13 EDT 2023
+Loading required modules
+   salmon/1.6.0/
+Copying AipIndex from /home/wong.co/BINF6309/m04/ to /scratch/wong.co/BINF6309/module04-cwcourtney/scripts
+Align samples to AipIndex with salmon Tue Oct 24 10:32:15 EDT 2023
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip02.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip02.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip02 }
+Logs will be written to quant/Aip02/logs
+[2023-10-24 10:32:16.503] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:16.503] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:16.503] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:16.503] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:16.503] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:16.503] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:16.527] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:16.541] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 21.733 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 12.503 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 180.89 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 20.199 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 47.857 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 14.728 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 785.85 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 13.773 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 321.62 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:32:17.511] [jointLog] [info] done
+[2023-10-24 10:32:17.633] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:17.653] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:19.237] [jointLog] [info] Computed 9,540 rich equivalence classes for further processing
+[2023-10-24 10:32:19.237] [jointLog] [info] Counted 33,240 total reads in the equivalence classes 
+[2023-10-24 10:32:19.249] [jointLog] [info] Number of mappings discarded because of alignment score : 3,241
+[2023-10-24 10:32:19.249] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,554
+[2023-10-24 10:32:19.249] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:19.249] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,171
+[2023-10-24 10:32:19.253] [jointLog] [warning] Only 33240 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:19.253] [jointLog] [info] Mapping rate = 84.1988%
+
+[2023-10-24 10:32:19.253] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:19.280] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:19.307] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:19.313] [jointLog] [info] iteration = 0 | max rel diff. = 77.3239
+[2023-10-24 10:32:19.912] [jointLog] [info] iteration = 100 | max rel diff. = 0.0024543
+[2023-10-24 10:32:19.926] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:19.926] [jointLog] [info] writing output 
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip05.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip05.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip05 }
+Logs will be written to quant/Aip05/logs
+[2023-10-24 10:32:21.425] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:21.425] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:21.425] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:21.425] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:21.425] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:21.425] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:21.440] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:21.446] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 19.748 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 11.313 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 147.03 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 16.464 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 44.811 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 13.28 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 44.084 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 14.151 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 236.11 us
+-----------------------------------------
+[2023-10-24 10:32:21.648] [jointLog] [info] done
+[2023-10-24 10:32:21.770] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:21.788] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:23.246] [jointLog] [info] Computed 10,921 rich equivalence classes for further processing
+[2023-10-24 10:32:23.246] [jointLog] [info] Counted 36,895 total reads in the equivalence classes 
+[2023-10-24 10:32:23.251] [jointLog] [info] Number of mappings discarded because of alignment score : 4,334
+[2023-10-24 10:32:23.251] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,038
+[2023-10-24 10:32:23.251] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:23.251] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,175
+[2023-10-24 10:32:23.255] [jointLog] [warning] Only 36895 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:23.255] [jointLog] [info] Mapping rate = 83.0389%
+
+[2023-10-24 10:32:23.255] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:23.286] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:23.304] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:23.310] [jointLog] [info] iteration = 0 | max rel diff. = 104.186
+[2023-10-24 10:32:23.910] [jointLog] [info] iteration = 100 | max rel diff. = 0.00790511
+[2023-10-24 10:32:23.916] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:23.916] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:24.043] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip05.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip05.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip05/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip06.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip06.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip06 }
+Logs will be written to quant/Aip06/logs
+[2023-10-24 10:32:25.383] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:25.383] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:25.383] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:25.383] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:25.383] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:25.383] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:25.399] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:25.410] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 14.144 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 5.8248 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 148.33 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 11.258 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 39.812 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 8.4106 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 34.586 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.8252 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 251.56 us
+-----------------------------------------
+[2023-10-24 10:32:25.556] [jointLog] [info] done
+[2023-10-24 10:32:25.664] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:25.681] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:27.271] [jointLog] [info] Computed 12,156 rich equivalence classes for further processing
+[2023-10-24 10:32:27.271] [jointLog] [info] Counted 40,983 total reads in the equivalence classes 
+[2023-10-24 10:32:27.276] [jointLog] [info] Number of mappings discarded because of alignment score : 4,538
+[2023-10-24 10:32:27.276] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,261
+[2023-10-24 10:32:27.276] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:27.276] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,045
+[2023-10-24 10:32:27.280] [jointLog] [warning] Only 40983 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:27.280] [jointLog] [info] Mapping rate = 81.7339%
+
+[2023-10-24 10:32:27.280] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:27.303] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:27.319] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:27.325] [jointLog] [info] iteration = 0 | max rel diff. = 112.355
+[2023-10-24 10:32:27.913] [jointLog] [info] iteration = 100 | max rel diff. = 0.285955
+[2023-10-24 10:32:27.944] [jointLog] [info] iteration = 106 | max rel diff. = 0.00358232
+[2023-10-24 10:32:27.949] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:27.949] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:28.055] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip06.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip06.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip06/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip12.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip12.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip12 }
+Logs will be written to quant/Aip12/logs
+[2023-10-24 10:32:29.822] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:29.822] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:29.822] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:29.822] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:29.822] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:29.822] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:29.835] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:29.842] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 23.725 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 13.056 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 146.29 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 16.107 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 45.169 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 13.445 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 39.782 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 13.781 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 248.6 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:32:30.048] [jointLog] [info] done
+[2023-10-24 10:32:30.162] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:30.178] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:31.768] [jointLog] [info] Computed 11,900 rich equivalence classes for further processing
+[2023-10-24 10:32:31.768] [jointLog] [info] Counted 41,907 total reads in the equivalence classes 
+[2023-10-24 10:32:31.773] [jointLog] [info] Number of mappings discarded because of alignment score : 5,230
+[2023-10-24 10:32:31.773] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,292
+[2023-10-24 10:32:31.773] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:31.773] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 2,733
+[2023-10-24 10:32:31.776] [jointLog] [warning] Only 41907 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:31.776] [jointLog] [info] Mapping rate = 82.473%
+
+[2023-10-24 10:32:31.776] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:31.798] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:31.813] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:31.819] [jointLog] [info] iteration = 0 | max rel diff. = 118.87
+[2023-10-24 10:32:32.408] [jointLog] [info] iteration = 100 | max rel diff. = 0.00345336
+[2023-10-24 10:32:32.413] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:32.413] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:32.534] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip12.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip12.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip12/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip13.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip13.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip13 }
+Logs will be written to quant/Aip13/logs
+[2023-10-24 10:32:34.302] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:34.302] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:34.302] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:34.302] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:34.302] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:34.302] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:34.320] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:34.333] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 15.082 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 5.9856 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 147.94 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 12.006 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 40.301 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 9.5289 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 34.867 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.9813 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 248.14 us
+-----------------------------------------
+[2023-10-24 10:32:34.486] [jointLog] [info] done
+[2023-10-24 10:32:34.589] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:34.607] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:36.910] [jointLog] [info] Computed 15,555 rich equivalence classes for further processing
+[2023-10-24 10:32:36.910] [jointLog] [info] Counted 63,236 total reads in the equivalence classes 
+[2023-10-24 10:32:36.916] [jointLog] [info] Number of mappings discarded because of alignment score : 7,711
+[2023-10-24 10:32:36.916] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 3,328
+[2023-10-24 10:32:36.916] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:36.916] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 6,123
+[2023-10-24 10:32:36.920] [jointLog] [warning] Only 63236 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:36.920] [jointLog] [info] Mapping rate = 82.448%
+
+[2023-10-24 10:32:36.920] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:36.950] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:36.967] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:36.974] [jointLog] [info] iteration = 0 | max rel diff. = 165.338
+[2023-10-24 10:32:37.581] [jointLog] [info] iteration = 100 | max rel diff. = 0.00508081
+[2023-10-24 10:32:37.586] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:37.586] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:37.700] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip13.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip13.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip13/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip14.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip14.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip14 }
+Logs will be written to quant/Aip14/logs
+[2023-10-24 10:32:38.709] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:38.709] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:38.709] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:38.709] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:38.709] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:38.709] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:38.721] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:38.727] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 20.585 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 11.79 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 166.28 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 18.345 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 46.451 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 15.2 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 42.225 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 15.67 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 245.87 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:32:38.955] [jointLog] [info] done
+[2023-10-24 10:32:39.064] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:39.081] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:40.528] [jointLog] [info] Computed 11,318 rich equivalence classes for further processing
+[2023-10-24 10:32:40.528] [jointLog] [info] Counted 38,040 total reads in the equivalence classes 
+[2023-10-24 10:32:40.533] [jointLog] [info] Number of mappings discarded because of alignment score : 3,784
+[2023-10-24 10:32:40.533] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,836
+[2023-10-24 10:32:40.533] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:40.533] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 903
+[2023-10-24 10:32:40.536] [jointLog] [warning] Only 38040 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:40.536] [jointLog] [info] Mapping rate = 84.6255%
+
+[2023-10-24 10:32:40.536] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:40.565] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:40.581] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:40.587] [jointLog] [info] iteration = 0 | max rel diff. = 102.263
+[2023-10-24 10:32:41.178] [jointLog] [info] iteration = 100 | max rel diff. = 0.0147904
+[2023-10-24 10:32:41.268] [jointLog] [info] iteration = 116 | max rel diff. = 0.00996358
+[2023-10-24 10:32:41.275] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:41.275] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:41.376] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip14.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip14.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip14/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip15.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip15.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip15 }
+Logs will be written to quant/Aip15/logs
+[2023-10-24 10:32:42.688] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:42.688] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:42.688] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:42.688] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:42.688] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:42.688] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:42.706] [jointLog] [info] Loading pufferfish index
+-----------------------------------------
+| Loading contig table | Time = 14.156 ms
+-----------------------------------------
+[2023-10-24 10:32:42.717] [jointLog] [info] Loading dense pufferfish index.
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 6.5343 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 149.59 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 11.182 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 40.597 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 9.5912 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 37.027 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.9539 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 293.49 us
+-----------------------------------------
+[2023-10-24 10:32:42.869] [jointLog] [info] done
+[2023-10-24 10:32:42.988] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:43.005] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:44.751] [jointLog] [info] Computed 12,811 rich equivalence classes for further processing
+[2023-10-24 10:32:44.751] [jointLog] [info] Counted 46,311 total reads in the equivalence classes 
+[2023-10-24 10:32:44.757] [jointLog] [info] Number of mappings discarded because of alignment score : 5,208
+[2023-10-24 10:32:44.757] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,403
+[2023-10-24 10:32:44.757] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:44.757] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,207
+[2023-10-24 10:32:44.761] [jointLog] [warning] Only 46311 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:44.761] [jointLog] [info] Mapping rate = 82.5258%
+
+[2023-10-24 10:32:44.761] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:44.790] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:44.830] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:44.836] [jointLog] [info] iteration = 0 | max rel diff. = 124.965
+[2023-10-24 10:32:45.435] [jointLog] [info] iteration = 100 | max rel diff. = 0.00509027
+[2023-10-24 10:32:45.440] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:45.440] [jointLog] [info] writing output 
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip17.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip17.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip17 }
+Logs will be written to quant/Aip17/logs
+[2023-10-24 10:32:46.626] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:46.626] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:46.626] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:46.626] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:46.626] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:46.626] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:46.645] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:46.651] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 21.585 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 12.157 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 179.23 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 18.75 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 46.871 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 15.566 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 48.461 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 15.646 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 296.33 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:32:46.875] [jointLog] [info] done
+[2023-10-24 10:32:47.029] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:47.048] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:48.820] [jointLog] [info] Computed 10,419 rich equivalence classes for further processing
+[2023-10-24 10:32:48.820] [jointLog] [info] Counted 41,808 total reads in the equivalence classes 
+[2023-10-24 10:32:48.826] [jointLog] [info] Number of mappings discarded because of alignment score : 3,669
+[2023-10-24 10:32:48.827] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,883
+[2023-10-24 10:32:48.827] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:48.827] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,100
+[2023-10-24 10:32:48.831] [jointLog] [warning] Only 41808 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:48.831] [jointLog] [info] Mapping rate = 86.6936%
+
+[2023-10-24 10:32:48.831] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:48.859] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:48.879] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:48.884] [jointLog] [info] iteration = 0 | max rel diff. = 85.2935
+[2023-10-24 10:32:49.471] [jointLog] [info] iteration = 100 | max rel diff. = 0.24991
+[2023-10-24 10:32:49.503] [jointLog] [info] iteration = 106 | max rel diff. = 0.00507365
+[2023-10-24 10:32:49.519] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:49.519] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:49.621] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip17.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip17.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip17/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip18.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip18.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip18 }
+Logs will be written to quant/Aip18/logs
+[2023-10-24 10:32:50.597] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:50.597] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:50.597] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:50.597] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:50.597] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:50.597] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:50.615] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:50.627] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 14.682 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 5.4195 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 158.4 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 10.578 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 38.765 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 9.0925 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 33.289 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 7.5832 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 243.06 us
+-----------------------------------------
+[2023-10-24 10:32:50.767] [jointLog] [info] done
+[2023-10-24 10:32:50.873] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:50.890] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:52.424] [jointLog] [info] Computed 11,853 rich equivalence classes for further processing
+[2023-10-24 10:32:52.424] [jointLog] [info] Counted 43,858 total reads in the equivalence classes 
+[2023-10-24 10:32:52.430] [jointLog] [info] Number of mappings discarded because of alignment score : 5,063
+[2023-10-24 10:32:52.430] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,395
+[2023-10-24 10:32:52.430] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:52.430] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,286
+[2023-10-24 10:32:52.433] [jointLog] [warning] Only 43858 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:52.433] [jointLog] [info] Mapping rate = 84.6059%
+
+[2023-10-24 10:32:52.433] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:52.452] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:52.467] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:52.473] [jointLog] [info] iteration = 0 | max rel diff. = 114.521
+[2023-10-24 10:32:53.063] [jointLog] [info] iteration = 100 | max rel diff. = 0.0317477
+[2023-10-24 10:32:53.194] [jointLog] [info] iteration = 123 | max rel diff. = 0.00158825
+[2023-10-24 10:32:53.202] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:53.202] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:53.307] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip18.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip18.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip18/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip19.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip19.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip19 }
+Logs will be written to quant/Aip19/logs
+[2023-10-24 10:32:55.008] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:55.008] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:55.008] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:55.008] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:55.008] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:55.008] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:55.021] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:55.027] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 20.751 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 12.259 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 144.52 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 18.518 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 47.583 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 13.612 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 39.437 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 13.786 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 247.9 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:32:55.237] [jointLog] [info] done
+[2023-10-24 10:32:55.375] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:55.392] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:32:56.955] [jointLog] [info] Computed 12,484 rich equivalence classes for further processing
+[2023-10-24 10:32:56.955] [jointLog] [info] Counted 40,248 total reads in the equivalence classes 
+[2023-10-24 10:32:56.960] [jointLog] [info] Number of mappings discarded because of alignment score : 4,305
+[2023-10-24 10:32:56.960] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,114
+[2023-10-24 10:32:56.960] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:32:56.960] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,347
+[2023-10-24 10:32:56.964] [jointLog] [warning] Only 40248 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:32:56.964] [jointLog] [info] Mapping rate = 82.0584%
+
+[2023-10-24 10:32:56.964] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:32:56.989] [jointLog] [info] Starting optimizer
+[2023-10-24 10:32:57.006] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:32:57.012] [jointLog] [info] iteration = 0 | max rel diff. = 95.7604
+[2023-10-24 10:32:57.613] [jointLog] [info] iteration = 100 | max rel diff. = 0.677443
+[2023-10-24 10:32:57.631] [jointLog] [info] iteration = 104 | max rel diff. = 0.00128236
+[2023-10-24 10:32:57.636] [jointLog] [info] Finished optimizer
+[2023-10-24 10:32:57.636] [jointLog] [info] writing output 
+
+[2023-10-24 10:32:57.795] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip19.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip19.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip19/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip20.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip20.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip20 }
+Logs will be written to quant/Aip20/logs
+[2023-10-24 10:32:59.461] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:32:59.461] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:32:59.461] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:32:59.461] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:32:59.461] [jointLog] [info] parsing read library format
+[2023-10-24 10:32:59.461] [jointLog] [info] There is 1 library.
+[2023-10-24 10:32:59.479] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:32:59.491] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 15.105 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 5.9435 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 145.45 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 11.062 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 41.757 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 8.7149 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 34.666 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 9.4822 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 251.51 us
+-----------------------------------------
+[2023-10-24 10:32:59.643] [jointLog] [info] done
+[2023-10-24 10:32:59.765] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:32:59.782] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:01.598] [jointLog] [info] Computed 12,047 rich equivalence classes for further processing
+[2023-10-24 10:33:01.598] [jointLog] [info] Counted 40,297 total reads in the equivalence classes 
+[2023-10-24 10:33:01.604] [jointLog] [info] Number of mappings discarded because of alignment score : 4,262
+[2023-10-24 10:33:01.604] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,253
+[2023-10-24 10:33:01.604] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:01.604] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,031
+[2023-10-24 10:33:01.607] [jointLog] [warning] Only 40297 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:01.607] [jointLog] [info] Mapping rate = 75.3638%
+
+[2023-10-24 10:33:01.607] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:01.631] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:01.648] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:01.654] [jointLog] [info] iteration = 0 | max rel diff. = 100.152
+[2023-10-24 10:33:02.250] [jointLog] [info] iteration = 100 | max rel diff. = 0.0128138
+[2023-10-24 10:33:02.383] [jointLog] [info] iteration = 123 | max rel diff. = 0.00544909
+[2023-10-24 10:33:02.390] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:02.390] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:02.534] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip20.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip20.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip20/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip21.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip21.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip21 }
+Logs will be written to quant/Aip21/logs
+[2023-10-24 10:33:04.410] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:04.410] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:04.410] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:04.410] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:04.410] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:04.410] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:04.421] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:04.426] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 19.788 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 11.465 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 150.12 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 16.396 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 47.788 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 13.94 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 38.175 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 14.741 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 305.55 us
+-----------------------------------------
+[2023-10-24 10:33:04.627] [jointLog] [info] done
+[2023-10-24 10:33:04.756] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:04.775] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:06.927] [jointLog] [info] Computed 14,269 rich equivalence classes for further processing
+[2023-10-24 10:33:06.927] [jointLog] [info] Counted 57,394 total reads in the equivalence classes 
+[2023-10-24 10:33:06.933] [jointLog] [info] Number of mappings discarded because of alignment score : 5,467
+[2023-10-24 10:33:06.933] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,785
+[2023-10-24 10:33:06.933] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:06.933] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,854
+[2023-10-24 10:33:06.938] [jointLog] [warning] Only 57394 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:06.938] [jointLog] [info] Mapping rate = 83.1568%
+
+[2023-10-24 10:33:06.938] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:06.966] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:06.988] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:06.993] [jointLog] [info] iteration = 0 | max rel diff. = 153.445
+[2023-10-24 10:33:07.610] [jointLog] [info] iteration = 100 | max rel diff. = 0.0139533
+[2023-10-24 10:33:07.818] [jointLog] [info] iteration = 135 | max rel diff. = 0.00532195
+[2023-10-24 10:33:07.832] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:07.832] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:07.952] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip21.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip21.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip21/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip23.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip23.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip23 }
+Logs will be written to quant/Aip23/logs
+[2023-10-24 10:33:09.373] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:09.373] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:09.373] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:09.373] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:09.373] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:09.373] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:09.391] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:09.403] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 14.578 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 6.3324 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 142.69 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 11.405 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 40.382 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 8.8747 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 38.735 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.4937 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 245.11 us
+-----------------------------------------
+[2023-10-24 10:33:09.557] [jointLog] [info] done
+[2023-10-24 10:33:09.670] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:09.687] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:11.266] [jointLog] [info] Computed 11,185 rich equivalence classes for further processing
+[2023-10-24 10:33:11.266] [jointLog] [info] Counted 48,251 total reads in the equivalence classes 
+[2023-10-24 10:33:11.272] [jointLog] [info] Number of mappings discarded because of alignment score : 4,056
+[2023-10-24 10:33:11.272] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,038
+[2023-10-24 10:33:11.272] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:11.272] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,289
+[2023-10-24 10:33:11.275] [jointLog] [warning] Only 48251 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:11.275] [jointLog] [info] Mapping rate = 87.5556%
+
+[2023-10-24 10:33:11.275] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:11.304] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:11.320] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:11.325] [jointLog] [info] iteration = 0 | max rel diff. = 125.455
+[2023-10-24 10:33:11.912] [jointLog] [info] iteration = 100 | max rel diff. = 0.0240553
+[2023-10-24 10:33:12.245] [jointLog] [info] iteration = 157 | max rel diff. = 0.0019368
+[2023-10-24 10:33:12.253] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:12.253] [jointLog] [info] writing output 
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip24.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip24.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip24 }
+Logs will be written to quant/Aip24/logs
+[2023-10-24 10:33:13.826] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:13.826] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:13.826] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:13.826] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:13.826] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:13.826] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:13.837] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:13.842] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 18.748 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 13.446 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 167.4 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 16.109 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 45.217 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 13.113 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 42.292 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 14.218 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 243.47 us
+-----------------------------------------
+[2023-10-24 10:33:14.043] [jointLog] [info] done
+[2023-10-24 10:33:14.149] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:14.166] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:15.523] [jointLog] [info] Computed 9,521 rich equivalence classes for further processing
+[2023-10-24 10:33:15.523] [jointLog] [info] Counted 36,535 total reads in the equivalence classes 
+[2023-10-24 10:33:15.527] [jointLog] [info] Number of mappings discarded because of alignment score : 4,044
+[2023-10-24 10:33:15.527] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,782
+[2023-10-24 10:33:15.527] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:15.527] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,207
+[2023-10-24 10:33:15.531] [jointLog] [warning] Only 36535 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:15.531] [jointLog] [info] Mapping rate = 86.0356%
+
+[2023-10-24 10:33:15.531] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:15.558] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:15.591] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:15.597] [jointLog] [info] iteration = 0 | max rel diff. = 102.472
+[2023-10-24 10:33:16.175] [jointLog] [info] iteration = 100 | max rel diff. = 0.00245286
+[2023-10-24 10:33:16.180] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:16.180] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:16.293] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip24.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip24.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip24/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip25.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip25.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip25 }
+Logs will be written to quant/Aip25/logs
+[2023-10-24 10:33:17.299] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:17.299] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:17.299] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:17.299] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:17.299] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:17.299] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:17.316] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:17.329] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 14.852 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 8.134 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 170.51 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 12.526 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 41.077 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 9.3411 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 40.518 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.6631 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 263.9 us
+-----------------------------------------
+[2023-10-24 10:33:17.489] [jointLog] [info] done
+[2023-10-24 10:33:17.642] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:17.661] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:19.835] [jointLog] [info] Computed 11,947 rich equivalence classes for further processing
+[2023-10-24 10:33:19.835] [jointLog] [info] Counted 48,910 total reads in the equivalence classes 
+[2023-10-24 10:33:19.843] [jointLog] [info] Number of mappings discarded because of alignment score : 4,581
+[2023-10-24 10:33:19.843] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,328
+[2023-10-24 10:33:19.843] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:19.843] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,372
+[2023-10-24 10:33:19.848] [jointLog] [warning] Only 48910 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:19.848] [jointLog] [info] Mapping rate = 84.5682%
+
+[2023-10-24 10:33:19.848] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:19.870] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:19.891] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:19.897] [jointLog] [info] iteration = 0 | max rel diff. = 120.998
+[2023-10-24 10:33:20.517] [jointLog] [info] iteration = 100 | max rel diff. = 0.0308844
+[2023-10-24 10:33:20.570] [jointLog] [info] iteration = 109 | max rel diff. = 0.000714003
+[2023-10-24 10:33:20.585] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:20.585] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:20.690] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip25.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip25.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip25/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip26.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip26.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip26 }
+Logs will be written to quant/Aip26/logs
+[2023-10-24 10:33:22.244] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:22.244] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:22.244] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:22.244] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:22.244] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:22.244] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:22.258] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:22.264] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 21.067 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 12.16 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 174.91 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 19.973 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 47.536 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 13.781 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 48.367 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 15.162 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 294.24 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:33:22.485] [jointLog] [info] done
+[2023-10-24 10:33:22.622] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:22.641] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:24.338] [jointLog] [info] Computed 10,636 rich equivalence classes for further processing
+[2023-10-24 10:33:24.338] [jointLog] [info] Counted 35,608 total reads in the equivalence classes 
+[2023-10-24 10:33:24.343] [jointLog] [info] Number of mappings discarded because of alignment score : 3,386
+[2023-10-24 10:33:24.343] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,715
+[2023-10-24 10:33:24.343] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:24.343] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 836
+[2023-10-24 10:33:24.348] [jointLog] [warning] Only 35608 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:24.348] [jointLog] [info] Mapping rate = 84.1697%
+
+[2023-10-24 10:33:24.348] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:24.377] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:24.397] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:24.403] [jointLog] [info] iteration = 0 | max rel diff. = 67.3498
+[2023-10-24 10:33:24.994] [jointLog] [info] iteration = 100 | max rel diff. = 0.00286325
+[2023-10-24 10:33:25.000] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:25.000] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:25.128] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip26.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip26.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip26/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip28.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip28.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip28 }
+Logs will be written to quant/Aip28/logs
+[2023-10-24 10:33:26.233] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:26.233] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:26.233] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:26.233] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:26.233] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:26.233] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:26.252] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:26.265] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 15.334 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 5.3749 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 135.83 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 11.684 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 41.533 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 8.5302 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 42.624 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 9.2722 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 298.68 us
+-----------------------------------------
+[2023-10-24 10:33:26.423] [jointLog] [info] done
+[2023-10-24 10:33:26.562] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:26.582] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:28.321] [jointLog] [info] Computed 8,979 rich equivalence classes for further processing
+[2023-10-24 10:33:28.321] [jointLog] [info] Counted 29,996 total reads in the equivalence classes 
+[2023-10-24 10:33:28.326] [jointLog] [info] Number of mappings discarded because of alignment score : 2,986
+[2023-10-24 10:33:28.326] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,619
+[2023-10-24 10:33:28.326] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:28.326] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 625
+[2023-10-24 10:33:28.330] [jointLog] [warning] Only 29996 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:28.330] [jointLog] [info] Mapping rate = 75.5586%
+
+[2023-10-24 10:33:28.330] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:28.351] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:28.371] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:28.378] [jointLog] [info] iteration = 0 | max rel diff. = 56.7138
+[2023-10-24 10:33:28.968] [jointLog] [info] iteration = 100 | max rel diff. = 0.00362714
+[2023-10-24 10:33:28.975] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:28.975] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:29.092] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip28.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip28.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip28/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip29.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip29.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip29 }
+Logs will be written to quant/Aip29/logs
+[2023-10-24 10:33:30.640] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:30.640] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:30.640] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:30.640] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:30.640] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:30.640] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:30.651] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:30.656] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 19.423 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 11.024 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 151.1 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 16.629 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 46.387 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 14.017 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 39.865 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 13.288 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 244.42 us
+-----------------------------------------
+[2023-10-24 10:33:30.857] [jointLog] [info] done
+[2023-10-24 10:33:30.965] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:30.982] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:32.933] [jointLog] [info] Computed 13,274 rich equivalence classes for further processing
+[2023-10-24 10:33:32.933] [jointLog] [info] Counted 52,052 total reads in the equivalence classes 
+[2023-10-24 10:33:32.939] [jointLog] [info] Number of mappings discarded because of alignment score : 4,905
+[2023-10-24 10:33:32.939] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,513
+[2023-10-24 10:33:32.939] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:32.939] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,926
+[2023-10-24 10:33:32.943] [jointLog] [warning] Only 52052 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:32.943] [jointLog] [info] Mapping rate = 83.2606%
+
+[2023-10-24 10:33:32.943] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:32.970] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:32.987] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:32.992] [jointLog] [info] iteration = 0 | max rel diff. = 147.522
+[2023-10-24 10:33:33.590] [jointLog] [info] iteration = 100 | max rel diff. = 0.000924648
+[2023-10-24 10:33:33.596] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:33.596] [jointLog] [info] writing output 
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip30.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip30.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip30 }
+Logs will be written to quant/Aip30/logs
+[2023-10-24 10:33:34.602] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:34.602] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:34.602] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:34.602] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:34.602] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:34.602] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:34.621] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:34.633] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 17.149 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 6.2826 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 155.77 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 12.028 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 40.216 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 8.3085 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 34.755 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.6853 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 252.13 us
+-----------------------------------------
+[2023-10-24 10:33:34.786] [jointLog] [info] done
+[2023-10-24 10:33:34.899] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:34.916] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:36.675] [jointLog] [info] Computed 13,015 rich equivalence classes for further processing
+[2023-10-24 10:33:36.675] [jointLog] [info] Counted 44,393 total reads in the equivalence classes 
+[2023-10-24 10:33:36.680] [jointLog] [info] Number of mappings discarded because of alignment score : 6,074
+[2023-10-24 10:33:36.680] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,546
+[2023-10-24 10:33:36.680] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:36.680] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,475
+[2023-10-24 10:33:36.684] [jointLog] [warning] Only 44393 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:36.684] [jointLog] [info] Mapping rate = 81.1424%
+
+[2023-10-24 10:33:36.684] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:36.706] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:36.724] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:36.730] [jointLog] [info] iteration = 0 | max rel diff. = 126.039
+[2023-10-24 10:33:37.331] [jointLog] [info] iteration = 100 | max rel diff. = 0.00208085
+[2023-10-24 10:33:37.336] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:37.336] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:37.464] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip30.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip30.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip30/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip32.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip32.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip32 }
+Logs will be written to quant/Aip32/logs
+[2023-10-24 10:33:38.519] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:38.519] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:38.519] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:38.520] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:38.520] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:38.520] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:38.533] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:38.541] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 21.47 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 12.252 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 146.95 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 17.967 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 46.984 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 14.606 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 41.75 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 15.692 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 252.19 us
+-----------------------------------------
+[2023-10-24 10:33:38.757] [jointLog] [info] done
+[2023-10-24 10:33:38.863] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:38.879] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:40.463] [jointLog] [info] Computed 10,856 rich equivalence classes for further processing
+[2023-10-24 10:33:40.463] [jointLog] [info] Counted 42,342 total reads in the equivalence classes 
+[2023-10-24 10:33:40.468] [jointLog] [info] Number of mappings discarded because of alignment score : 4,399
+[2023-10-24 10:33:40.468] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,126
+[2023-10-24 10:33:40.468] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:40.468] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,181
+[2023-10-24 10:33:40.471] [jointLog] [warning] Only 42342 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:40.471] [jointLog] [info] Mapping rate = 84.7399%
+
+[2023-10-24 10:33:40.471] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:40.497] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:40.514] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:40.520] [jointLog] [info] iteration = 0 | max rel diff. = 109.437
+[2023-10-24 10:33:41.107] [jointLog] [info] iteration = 100 | max rel diff. = 0.00891439
+[2023-10-24 10:33:41.112] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:41.112] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:41.261] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip32.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip32.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip32/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip33.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip33.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip33 }
+Logs will be written to quant/Aip33/logs
+[2023-10-24 10:33:43.011] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:43.011] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:43.011] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:43.011] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:43.011] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:43.011] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:43.029] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:43.042] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 15.359 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 6.9188 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 180.87 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 13.489 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 42.314 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 9.2496 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 43.063 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 8.8533 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 293.5 us
+-----------------------------------------
+[2023-10-24 10:33:43.207] [jointLog] [info] done
+[2023-10-24 10:33:43.343] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:43.363] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:45.985] [jointLog] [info] Computed 13,459 rich equivalence classes for further processing
+[2023-10-24 10:33:45.985] [jointLog] [info] Counted 52,370 total reads in the equivalence classes 
+[2023-10-24 10:33:45.997] [jointLog] [info] Number of mappings discarded because of alignment score : 6,988
+[2023-10-24 10:33:45.997] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 2,564
+[2023-10-24 10:33:45.997] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:45.997] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,789
+[2023-10-24 10:33:46.002] [jointLog] [warning] Only 52370 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:46.002] [jointLog] [info] Mapping rate = 81.8243%
+
+[2023-10-24 10:33:46.002] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:46.025] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:46.051] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:46.057] [jointLog] [info] iteration = 0 | max rel diff. = 140.667
+[2023-10-24 10:33:46.690] [jointLog] [info] iteration = 100 | max rel diff. = 0.00485006
+[2023-10-24 10:33:46.705] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:46.705] [jointLog] [info] writing output 
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip34.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip34.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip34 }
+Logs will be written to quant/Aip34/logs
+[2023-10-24 10:33:48.454] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:48.454] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:48.454] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:48.454] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:48.454] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:48.454] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:48.471] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:48.476] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 20.772 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 11.382 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 147.58 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 18.574 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 47.686 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 14.479 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 40.786 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 13.135 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 248.06 us
+-----------------------------------------
+[2023-10-24 10:33:48.684] [jointLog] [info] done
+[2023-10-24 10:33:48.829] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:48.849] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:50.600] [jointLog] [info] Computed 10,531 rich equivalence classes for further processing
+[2023-10-24 10:33:50.600] [jointLog] [info] Counted 33,751 total reads in the equivalence classes 
+[2023-10-24 10:33:50.606] [jointLog] [info] Number of mappings discarded because of alignment score : 3,476
+[2023-10-24 10:33:50.606] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,800
+[2023-10-24 10:33:50.606] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:50.606] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 846
+[2023-10-24 10:33:50.610] [jointLog] [warning] Only 33751 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:50.610] [jointLog] [info] Mapping rate = 81.534%
+
+[2023-10-24 10:33:50.610] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:50.631] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:50.652] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:50.658] [jointLog] [info] iteration = 0 | max rel diff. = 91.3268
+[2023-10-24 10:33:51.256] [jointLog] [info] iteration = 100 | max rel diff. = 0.00138193
+[2023-10-24 10:33:51.268] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:51.268] [jointLog] [info] writing output 
+
+[2023-10-24 10:33:51.386] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip34.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip34.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip34/lib_format_counts.json for details
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip35.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip35.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip35 }
+Logs will be written to quant/Aip35/logs
+[2023-10-24 10:33:52.908] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:52.908] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:52.908] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:52.908] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:52.908] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:52.908] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:52.927] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:52.937] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 14.381 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 5.7085 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 145.34 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 11.574 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 39.709 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 8.0239 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 35.893 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 9.12 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 257.95 us
+-----------------------------------------
+[2023-10-24 10:33:53.084] [jointLog] [info] done
+[2023-10-24 10:33:53.191] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:53.208] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:55.175] [jointLog] [info] Computed 13,827 rich equivalence classes for further processing
+[2023-10-24 10:33:55.175] [jointLog] [info] Counted 55,633 total reads in the equivalence classes 
+[2023-10-24 10:33:55.181] [jointLog] [info] Number of mappings discarded because of alignment score : 7,230
+[2023-10-24 10:33:55.181] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 3,175
+[2023-10-24 10:33:55.181] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:55.181] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 4,176
+[2023-10-24 10:33:55.184] [jointLog] [warning] Only 55633 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:55.184] [jointLog] [info] Mapping rate = 83.1982%
+
+[2023-10-24 10:33:55.184] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:55.203] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:55.219] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:55.224] [jointLog] [info] iteration = 0 | max rel diff. = 151.834
+[2023-10-24 10:33:55.811] [jointLog] [info] iteration = 100 | max rel diff. = 0.134092
+[2023-10-24 10:33:56.049] [jointLog] [info] iteration = 141 | max rel diff. = 0.00783067
+[2023-10-24 10:33:56.056] [jointLog] [info] Finished optimizer
+[2023-10-24 10:33:56.056] [jointLog] [info] writing output 
+
+Version Info: ### PLEASE UPGRADE SALMON ###
+### A newer version of salmon with important bug fixes and improvements is available. ####
+###
+The newest version, available at https://github.com/COMBINE-lab/salmon/releases
+contains new features, improvements, and bug fixes; please upgrade at your
+earliest convenience.
+###
+Sign up for the salmon mailing list to hear about new versions, features and updates at:
+https://oceangenomics.com/subscribe
+### salmon (selective-alignment-based) v1.6.0
+### [ program ] => salmon 
+### [ command ] => quant 
+### [ libType ] => { IU }
+### [ mates1 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip36.R1.fastq }
+### [ mates2 ] => { /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip36.R2.fastq }
+### [ index ] => { AipIndex }
+### [ validateMappings ] => { }
+### [ output ] => { quant/Aip36 }
+Logs will be written to quant/Aip36/logs
+[2023-10-24 10:33:57.814] [jointLog] [info] setting maxHashResizeThreads to 20
+[2023-10-24 10:33:57.814] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2023-10-24 10:33:57.814] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2023-10-24 10:33:57.814] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2023-10-24 10:33:57.814] [jointLog] [info] parsing read library format
+[2023-10-24 10:33:57.814] [jointLog] [info] There is 1 library.
+[2023-10-24 10:33:57.825] [jointLog] [info] Loading pufferfish index
+[2023-10-24 10:33:57.831] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 20.781 ms
+-----------------------------------------
+size = 56654
+-----------------------------------------
+| Loading contig offsets | Time = 11.794 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 132.69 us
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 17.326 ms
+-----------------------------------------
+size = 14331215
+Number of ones: 56653
+Number of ones per inventory item: 512
+Inventory entries filled: 111
+-----------------------------------------
+| Loading contig boundaries | Time = 45.927 ms
+-----------------------------------------
+size = 14331215
+-----------------------------------------
+| Loading sequence | Time = 14.377 ms
+-----------------------------------------
+size = 12971543
+-----------------------------------------
+| Loading positions | Time = 40.33 ms
+-----------------------------------------
+size = 16026678
+-----------------------------------------
+| Loading reference sequence | Time = 16.928 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 253.22 us
+-----------------------------------------
+
+
+
+
+[2023-10-24 10:33:58.041] [jointLog] [info] done
+[2023-10-24 10:33:58.148] [jointLog] [info] Index contained 34,774 targets
+[2023-10-24 10:33:58.164] [jointLog] [info] Number of decoys : 0
+
+
+
+
+
+
+
+
+[2023-10-24 10:33:59.622] [jointLog] [info] Computed 11,218 rich equivalence classes for further processing
+[2023-10-24 10:33:59.622] [jointLog] [info] Counted 43,712 total reads in the equivalence classes 
+[2023-10-24 10:33:59.627] [jointLog] [info] Number of mappings discarded because of alignment score : 4,071
+[2023-10-24 10:33:59.627] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,923
+[2023-10-24 10:33:59.627] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2023-10-24 10:33:59.627] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,134
+[2023-10-24 10:33:59.631] [jointLog] [warning] Only 43712 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2023-10-24 10:33:59.631] [jointLog] [info] Mapping rate = 86.5481%
+
+[2023-10-24 10:33:59.631] [jointLog] [info] finished quantifyLibrary()
+[2023-10-24 10:33:59.653] [jointLog] [info] Starting optimizer
+[2023-10-24 10:33:59.668] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2023-10-24 10:33:59.674] [jointLog] [info] iteration = 0 | max rel diff. = 113.249
+[2023-10-24 10:34:00.246] [jointLog] [info] iteration = 100 | max rel diff. = 0.701131
+[2023-10-24 10:34:00.263] [jointLog] [info] iteration = 104 | max rel diff. = 0.0052831
+[2023-10-24 10:34:00.268] [jointLog] [info] Finished optimizer
+[2023-10-24 10:34:00.268] [jointLog] [info] writing output 
+
+[2023-10-24 10:34:00.375] [jointLog] [warning] NOTE: Read Lib [[ /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip36.R1.fastq, /work/courses/BINF6309/AiptasiaMiSeq/fastq/Aip36.R2.fastq]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: quant/Aip36/lib_format_counts.json for details
+
+Copy output files to /home/wong.co/BINF6309/m04/
+Clean up my scratch directory
+Ending script Tue Oct 24 10:34:25 EDT 2023
+Don't forget to remove your log files in /scratch/username/ manually

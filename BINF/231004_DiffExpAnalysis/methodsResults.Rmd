@@ -1,0 +1,54 @@
+---
+title: "BINF 6309 Module 04: Differential Expression Analysis"
+author: "Courtney Wong"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+bibliography: citations/bibliography.ris
+---
+
+# Overview
+
+In this module, we perform a differential expression analysis on a sample *de-novo* Aiptasia transcriptome using Salmon [@Patro], tximport [@Soneson], and DESeq2 [@Love].
+
+# Methods
+
+## 1. Build an index then estimate relative abundance using Salmon
+
+A Salmon index is first built in `buildIndex.sh` using `index`. This shell script takes in `/work/courses/BINF6309/data_BINF6309/Module4/Trinity.fasta` and creates an index using a kmer length of 25, then places output files into the `AipIndex` subdirectory.
+
+```{bash, code=readLines("buildIndex.sh"), echo=TRUE, eval=FALSE}
+```
+
+Then, relative abundance is estimated in `alignAll.sh` by running `quant`. This uses the previously generated indices and loops through all Aip samples to output calculated abundances for each into the `quant` subdirectory.
+
+```{bash, code=readLines("alignAll.sh"), echo=TRUE, eval=FALSE}
+```
+
+## 2. Generate a table mapping transcripts to genes using annotation tables
+
+Annotation tables, required in Step 3, are generated in `mergeKo.R`. BLAST, SwissPort, and KEGG files are imported and merged together. The head of the output, `tx2gene.csv`, is shown below.
+
+```{R, code=readLines("mergeKo.R"), echo=FALSE, eval=TRUE}
+```
+
+## 3. Import Salmon abundance estimates and perform statistical tests to identify differentially expressed genes
+
+Next, the Salmon abundance estimates for each Aip sample is imported using `tximport` and then stored into a dataframe using `DESeqDataSetFromTximport` in `deAnnotated.R`.
+
+The same annotation files used in Step 2 are merged together to annotate the output with KO, pathway, and description information.
+
+
+# Results
+
+The following table, `deAnnotated.csv`, is the final result of this pipeline. It contains all the genes that were identified to be differentially expressed from the Aiptasia transcriptome.
+
+```{R eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, code=readLines("deAnnotated.R")}
+
+```
+
+
+# References

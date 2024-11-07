@@ -1,0 +1,34 @@
+TY  - JOUR
+DB  - PubMed
+AU  - Love, Michael I
+AU  - Huber, Wolfgang
+AU  - Anders, Simon
+T1  - Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2
+LA  - eng
+SN  - 1474-760X
+SN  - 1465-6906
+Y1  - 2014
+AB  - In comparative high-throughput sequencing assays, a fundamental task is the analysis of count data, such as read counts per gene in RNA-seq, for evidence of systematic changes across experimental conditions. Small replicate numbers, discreteness, large dynamic range and the presence of outliers require a suitable statistical approach. We present DESeq2, a method for differential analysis of count data, using shrinkage estimation for dispersions and fold changes to improve stability and interpretability of estimates. This enables a more quantitative analysis focused on the strength rather than the mere presence of differential expression. The DESeq2 package is available at http://www.bioconductor.org/packages/release/bioc/html/DESeq2.html webcite.
+SP  - 550
+EP  - 550
+VL  - 15
+IS  - 12
+AN  - 25516281
+UR  - https://pubmed.ncbi.nlm.nih.gov/25516281
+DO  - 10.1186/s13059-014-0550-8
+L2  - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4302049/
+U1  - 25516281[pmid]
+U2  - PMC4302049[pmcid]
+U4  - s13059-014-0550-8[PII]
+J2  - Genome Biol
+JF  - Genome biology
+KW  - Algorithms
+KW  - Computational Biology/*methods
+KW  - High-Throughput Nucleotide Sequencing
+KW  - Models, Genetic
+KW  - RNA/*analysis
+KW  - Sequence Analysis, RNA
+KW  - *Software
+CY  - England
+ER  - 
+
