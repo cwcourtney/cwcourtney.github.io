@@ -1,0 +1,8 @@
+---
+title: "GitHub Pages Example"
+author: "Wong, Courtney"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Testing
