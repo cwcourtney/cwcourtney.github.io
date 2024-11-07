@@ -1,0 +1,6 @@
+name: "cwcourtney.github.io"
+navbar:
+  title: "My Website"
+  top:
+    - text: "Home"
+      href: index.html
