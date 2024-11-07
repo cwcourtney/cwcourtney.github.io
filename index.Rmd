@@ -16,3 +16,4 @@ output: html_document
 
 -   [Differential Expression Analysis with DESeq2](./BINF/231004_DiffExpAnalysis/methodsResults.html)
 -   [Variant Calling with DeepVariant](./BINF/231124_VariantCalling/MethodsVariantCalling.html)
+-   [scRNAseq Workflow Exploration](./BINF/241204_scRNAseq/scRNAseq_workflow.html)
