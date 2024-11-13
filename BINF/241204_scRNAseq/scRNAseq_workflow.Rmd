@@ -1,0 +1,476 @@
+---
+title: "scRNA-seq Workflow Exploration"
+author: "Courtney Wong"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    number_sections: true
+  bibliography: citations/bibliography.ris
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	message = FALSE
+)
+```
+
+```{r lib}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(knitr)
+  library(Seurat)
+  library(patchwork)
+  library(ggplot2)
+  library(purrr)
+  library(ggpubr)
+})
+```
+
+# Motivation
+
+In this exercise, we explore the bioinformatics methods used by Liao et al. (2020) to process single-cell RNA-seq data starting from raw FASTQ files. Their final dataset, containing annotated cell types and counts for each sample, were subsequently used by Phipson et al. (2022) to demonstrate their pipeline coined *propeller* to calculate statistical significance in cell type proportions between experimental groups.
+
+Our goal is to gain exposure to the workflow and understand key filtering steps. We also hope to comment on the drawbacks of Phipson et al.'s use of Liao et al.'s dataset, as they directly used this fully processed and cleaned dataset to test *propeller* without interrogating the upstream steps that we will be exploring.
+
+The subset of samples selected for our exploration (BALF-C141, BALF-C143, and C-51) were derived from bronchoalveolar immune cells taken from the lung of a patient under 3 conditions: mild COVID-19, severe COVID-19, and healthy control, respectively.
+
+# FASTQ Processing Methods
+
+## Obtain FASTQ files from GEO/ENA in bulk
+
+Raw paired-read FASTQ files from this scRNA-seq experiment are available online under the GEO accession ID [GSE145926](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145926). To obtain direct links to each of the 12 samples in bulk, we query this accession ID in [SRA explorer](https://sra-explorer.info/), select the relevant samples, then download the metadata to a csv, shown below.
+
+```{r, echo=FALSE}
+read.csv("../samples/SampleList_covid.csv", header=FALSE) %>%
+  arrange(V1) %>%
+  kable(col.names = c("Accession ID", "Sample Name", "FASTQ Link"))
+```
+
+We then supply this .csv as an input to our sbatch script below to download all the FASTQs locally.
+
+```{bash, code=readLines("get_fastq.sh"), echo=TRUE, eval=FALSE}
+```
+
+We now have the following file structure under `/scratch/${USER}/data/`:
+
+```         
+.
+|-- BALF-C141
+|   |-- SRR11181954_1.fastq.gz
+|   `-- SRR11181954_1.fastq.gz
+|-- BALF-C142
+|   |-- SRR11181955_1.fastq.gz
+|   `-- SRR11181955_2.fastq.gz
+|-- BALF-C143
+|   |-- SRR11181956_1.fastq.gz
+|   `-- SRR11181956_2.fastq.gz
+|-- BALF-C144
+|   |-- SRR11181957_1.fastq.gz
+|   `-- SRR11181957_2.fastq.gz
+|-- BALF-C145
+|   |-- SRR11181958_1.fastq.gz
+|   `-- SRR11181958_2.fastq.gz
+|-- BALF-C146
+|   |-- SRR11181959_1.fastq.gz
+|   `-- SRR11181959_2.fastq.gz
+|-- C100
+|   |-- SRR11537948_1.fastq.gz
+|   `-- SRR11537948_2.fastq.gz
+|-- C148
+|   |-- SRR11537949_1.fastq.gz
+|   `-- SRR11537949_2.fastq.gz
+|-- C149
+|   |-- SRR11537950_1.fastq.gz
+|   `-- SRR11537950_2.fastq.gz
+|-- C152
+|   |-- SRR11537951_1.fastq.gz
+|   `-- SRR11537951_2.fastq.gz
+|-- C51
+|   |-- SRR11537946_1.fastq.gz
+|   `-- SRR11537946_2.fastq.gz
+`-- C52
+    |-- SRR11537947_1.fastq.gz
+    `-- SRR11537947_2.fastq.gz
+```
+
+Per the 10X Genomics Chromium Single Cell 5’ protocol, note that Read 1 is the 16nt barcode and 10nt UMI:
+
+```         
+(base) [wong.co@login-00 data]$ cd BALF-C141
+(base) [wong.co@login-00 BALF-C141]$ zcat SRR11181954_S1_R1_001.fastq.gz | head
+@SRR11181954.1 /1
+GAACATCGTAACTGTATATTATTCTC
++
+DCCC@;8C@7936;<->440.):8->
+@SRR11181954.2 /1
+AAGCCGCAGTGCGATGGTACACAGCG
++
+B:DCDDB?CBC=<::BA6<>.@.9(A
+@SRR11181954.3 /1
+ACTGCTCCAGCCTGTGCCTGATGGTG
+```
+
+And Read 2 is the actual transcript:
+
+```         
+(base) [wong.co@login-00 BALF-C141]$ zcat SRR11181954_S1_R2_001.fastq.gz | head
+@SRR11181954.1 /2
+GTCTGGCCAGCTGGTGAACTGAATGTGAGTCACCTCTCTTCCAGTTGCTTTTTCTTTTTTATTTACAATGTTCAATTTCTGAATGATGTAAGCTGGACAT
++
+BCBBB6B4BCBBBB;BBAA@CBCB:ACD@>9D95C5?BC@@A@B:CB?A6::B@?>?@@@B<;BA=BA7E3?ACB7AA@B>A@9?<CB+@C1AACC(:A>
+@SRR11181954.2 /2
+ATTGCGCCAGGTTTCAATTTCTATCGCCTATACTTTATTTGGGTAAATGGTTTGGCTAAGGTTGTCTGGTAGTAAGGTGGAGTGGGTTTGGGGCTAGGCT
++
+<A@DDCCDCCB1@A<AD@=BBCCCAC;DCADCCCCBCDBDDDC=CACCACC6CD@BDACEC:BEAC>DB@CEBACCDDDCEE=CDC@4>CDDC(DCCD%=
+@SRR11181954.3 /2
+CCTTTCCTGTTCACTCTACCCTTTGACTCTAAATCTCAAAGCCAGTGTTGGGGCCCAGTGGCTCCATTCGATTGAAACATGGCCAATGATATCCAAGAGC
+```
+
+## Set up cellranger for the first time
+
+As this is our first time using cellranger, there are a few setup steps to complete first:
+
+1.  Download and unzip cellranger from 10X Genomics
+2.  Download and unzip the 10X Genomics GRCh38 human reference dataset
+3.  Ensure FASTQ files conform to [cellranger's expected format](https://www.10xgenomics.com/support/software/cell-ranger/latest/analysis/inputs/cr-specifying-fastqs): `[Sample Name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz` or `[Sample Name]_S1_[Read Type]_001.fastq.gz`
+
+```{bash, code=readLines("setup_cellranger.sh"), echo=TRUE, eval=FALSE}
+```
+
+## Run cellranger on 3 select samples
+
+Next, we run cellranger in `count` mode to perform sample de-multiplexing, barcode processing, and single-cell 5’ UMI counting with human GRCh38 as the reference genome. At this stage, we are hard-coding to supply just one selected sample at a time for testing purposes but can modify the code at a later time to loop over multiple samples.
+
+```{bash, code=readLines("run_cellranger.sh"), echo=TRUE, eval=FALSE}
+```
+
+The key outputs reside in the subfolder `outs/`, with the following file structure. The files we are primarily interested in are the summary report `web_summary.html` and the feature barcode matrix `filtered_feature_bc_matrix.h5`, which we have copied into this repository under `results/`.
+
+```         
+.
+|-- analysis
+|   |-- clustering
+|   |-- diffexp
+|   |-- pca
+|   |-- tsne
+|   `-- umap
+|-- cloupe.cloupe
+|-- filtered_feature_bc_matrix
+|   |-- barcodes.tsv.gz
+|   |-- features.tsv.gz
+|   `-- matrix.mtx.gz
+|-- filtered_feature_bc_matrix.h5
+|-- metrics_summary.csv
+|-- molecule_info.h5
+|-- possorted_genome_bam.bam
+|-- possorted_genome_bam.bam.bai
+|-- raw_feature_bc_matrix
+|   |-- barcodes.tsv.gz
+|   |-- features.tsv.gz
+|   `-- matrix.mtx.gz
+|-- raw_feature_bc_matrix.h5
+`-- web_summary.html
+```
+
+## Assess cellranger web summary
+
+The web summary generated by cellranger provides some quality metrics on cells based on barcodes and UMIs detected in each cell as well as mapping quality to the reference genome.
+
+![](../results/BALF-C141/WebSummary.png)
+
+![](../results/BALF-C143/WebSummary.png)
+
+![](../results/C51/WebSummary.png)
+
+The barcode rank plots all exhibit the characteristic "cliff and knee" shape of a typical sample (although BALF-C143 shows a less apparent knee shape). The steep dropoff in UMI counts per cell/barcode indicates good separation between cell-associated barcodes (abundant UMI count suggesting robust transcripts from real cells) and barcodes from blank droplets (extremely low, background-level UMI count suggesting either lack of a GEM or lack of a cell). We default to using cellranger's probabilistic model for calling cells to focus only on the good-quality cells, indicated by the blue colored portion of the curve.
+
+We do need to be cautious about the imbalance of abundances among these samples. BALF-C141 contained far fewer cells (~6k) than BALF-C143 (~20k) and C51 (~13k). As a result, we detected far more reads per cell on average for BALF-C141 than the other two, but the UMIs thankfully corrected for this imbalance as intended, as the average UMI count per cell is roughly similar between the three samples, as are the total number of genes detected. Nevertheless, with such an imbalance in cell count, **we should exercise caution during the upcoming QC steps and set thresholds for each sample independently before integrating.**
+
+Separately, we also note good sequencing quality based on the high valid barcode detection, valid UMI detection, and Q30 bases in the barcode. Mapping quality is also good, indicated by the high percentage of reads mapped to the genome.
+
+# Post-Processing Methods using Seurat
+
+## Load data
+
+Below, we load the filtered .h5 gene count data generated by CellRanger and store it into a Seurat object for each of the 3 samples. Note that we could have set a threshold for `min.cells` (features were detected in at least this many cells) and `min.features` (cells where at least this many features were detected), but Liao et al. (2020) did not mention deviating from the default for these parameters.
+
+```{r}
+# Initialize Seurat object with counts data
+healthy <- CreateSeuratObject(counts = Read10X_h5("../results/C51/filtered_feature_bc_matrix.h5"),
+                           project = "healthy")
+mild <- CreateSeuratObject(counts = Read10X_h5("../results/BALF-C141/filtered_feature_bc_matrix.h5"),
+                           project = "mild")
+severe <- CreateSeuratObject(counts = Read10X_h5("../results/BALF-C143/filtered_feature_bc_matrix.h5"),
+                           project = "severe")
+covid.combined <- merge(healthy, y=c(mild, severe), add.cell.ids=c("H", "M", "S"), project="covid")
+# Inspect
+head(covid.combined@meta.data)
+# Clear memory
+rm(list=c("healthy", "mild", "severe"))
+```
+
+## QC and Cell Filtering
+
+Next, we assess the quality of the cells based on the number of unique features/genes detected (`nFeature_RNA`, extremely low gene count suggests empty droplets or poor quality cells while extremely high gene count suggests doublets) and the percentage of reads that map to mitochondrial genes (`percent.mt`, a high percentage suggests contamination due to low-quality or dying cells). `nCount_RNA` is the total number of molecules detected in the cell.
+
+```{r}
+# Calculate percentage of genes that are mitochondrial
+covid.combined[["percent.mt"]] <- PercentageFeatureSet(covid.combined, pattern = "^MT-")
+head(covid.combined@meta.data)
+VlnPlot(covid.combined, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
+        ncol = 3, pt.size = 0.0001, alpha=0.1, group.by = "orig.ident") &
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+# Create scatterplots to view trend
+FeatureScatter(covid.combined, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", group.by = "orig.ident") &
+  scale_color_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+FeatureScatter(covid.combined, feature1 = "nCount_RNA", feature2 = "percent.mt", group.by = "orig.ident") &
+  scale_color_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+```
+
+We can also check for ribosomal RNA contamination and confirmed that there are none present in the dataset:
+
+```{r}
+grep("-RP", Features(covid.combined), value=TRUE) %>%
+  length()
+```
+
+The total cell count and total gene count by sample is summarized in the table below:
+
+```{r}
+data.frame(Identity = c("healthy", "mild", "severe")) %>%
+  mutate(
+    TotalCells = map_int(Identity, ~ ncol(subset(covid.combined, subset = orig.ident == .x))),
+    TotalGenes = map_int(Identity, ~ nrow(subset(covid.combined, subset = orig.ident == .x)))
+  ) %>%
+  kable()
+```
+
+Liao et al. filtered the cells using the following criteria: "gene number between 200 and 6000, UMI count above 1000 and mitochondrial gene percentage below 0.1." These suggested thresholds are indicated below with a dashed red line on the kernel density plots below:
+
+```{r fig.width=5, fig.height=7}
+p1 <- covid.combined@meta.data %>%
+  ggplot(aes(x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.3) +
+  geom_vline(xintercept = c(200, 6000), color = "red", linetype = "dashed", linewidth = 0.5) +
+  scale_x_log10() +
+  labs(title = "Gene Count Per Cell (Pre-Filter)") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+p2 <- covid.combined@meta.data %>%
+  ggplot(aes(x = (nCount_RNA), fill = orig.ident)) +
+  geom_density(alpha = 0.3) +
+  geom_vline(xintercept = 1000, color = "red", linetype = "dashed", linewidth = 0.5) +
+  scale_x_log10() +
+  labs(title = "UMI Count Per Cell (Pre-Filter)") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+p3 <- covid.combined@meta.data %>%
+  ggplot(aes(x = percent.mt, fill = orig.ident)) +
+  geom_density(alpha = 0.3) +
+  geom_vline(xintercept = 10, color = "red", linetype = "dashed", linewidth = 0.5) +
+  scale_x_log10() +
+  labs(title = "Mt Gene % Per Cell (Pre-Filter)") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+ggarrange(p1, p2, p3, ncol=1, common.legend=TRUE, legend="bottom")
+```
+
+We apply this feature below using `subset()`, check the total cell and gene counts by sample again, then re-plot the same figures.
+
+```{r fig.width=8, fig.height=7}
+# Apply filter
+covid.combined <- subset(covid.combined, subset = nFeature_RNA > 200 & nFeature_RNA < 6000 & nCount_RNA > 1000 & percent.mt < 10)
+# Re-check cell and gene counts
+data.frame(Identity = c("healthy", "mild", "severe")) %>%
+  mutate(
+    TotalCells = map_int(Identity, ~ ncol(subset(covid.combined, subset = orig.ident == .x))),
+    TotalGenes = map_int(Identity, ~ nrow(subset(covid.combined, subset = orig.ident == .x)))
+  ) %>%
+  kable()
+# Plot
+p1.f <- covid.combined@meta.data %>%
+  ggplot(aes(x = nFeature_RNA, fill = orig.ident)) +
+  geom_density(alpha = 0.3) +
+  scale_x_log10() +
+  labs(title = "Gene Count Per Cell (Post-Filter)") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+p2.f <- covid.combined@meta.data %>%
+  ggplot(aes(x = (nCount_RNA), fill = orig.ident)) +
+  geom_density(alpha = 0.3) +
+  scale_x_log10() +
+  labs(title = "UMI Count Per Cell (Post-Filter)") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+p3.f <- covid.combined@meta.data %>%
+  ggplot(aes(x = percent.mt, fill = orig.ident)) +
+  geom_density(alpha = 0.3) +
+  scale_x_log10() +
+  labs(title = "Mt Gene % Per Cell (Post-Filter)") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = c("healthy" = "#00BA38", "mild" = "#619CFF", "severe" = "#F8766D"))
+ggarrange(p1, p1.f, p2, p2.f, p3, p3.f, nrow=3, ncol=2, common.legend=TRUE, legend="bottom")
+```
+
+We observe from the violin plots and KD plots that the distributions of gene count, UMI count, and mitochondrial percent are vastly different between the three samples. **Thus, a significant limitation in Liao et al.'s filtering approach is that thresholds were not tailored to each sample to address significant differences in composition and were instead standardized across all samples.** For instance, the mild (blue) sample exhibits a peak for high gene counts and the healthy (green) sample exhibit a peak for high mitochondrial gene counts that are much further to the right than the other two groups. The upper threshold for gene count and the threshold for mitochondrial gene percent slice rather arbitrarily through these upper peaks. We should therefore keep in mind that **(1) the mild sample still retains a large number of potential doublets and (2) the healthy sample still retains a large number of cells with high mitochondrial gene content (likely dead cells).**
+
+## Normalization
+
+Liao et al. (2020) normalizes the filtered gene-barcode matrix using the LogNormalize method. The operation below performs normalization on a per-sample (layer) basis as intended. The original data is stored in the `counts.<SampleName>` layer and the normalized data is stored in the `data.<SampleName>` layer.
+
+```{r}
+# Normalize
+covid.combined <- NormalizeData(covid.combined, normalization.method = "LogNormalize")
+# Inspect, notice 6 total layers
+covid.combined
+# Inspect counts vs data
+summary(covid.combined[["RNA"]]$counts.mild[,3])
+summary(covid.combined[["RNA"]]$data.mild[,3])
+```
+
+## Selection of Highly Variable Genes
+
+Liao et al. then "analyzed by principal component analysis (PCA) using the top 2,000 most variable genes." This means that the features with the most cell-to-cell variation are selected as they will be useful for downstream clustering. The authors do not mention a selection method for choosing the top variable features, so we use the default, `vst`, which standardizes feature values using the observed mean and expected variance predicted by local polynomial regression (loess) between log(variance) and log(mean).
+
+First, we must split the Seurat Object by sample because each sample likely has a different list of genes that are deemed most variable. Then, we can `lapply()` the `FindVariableFeatures()` function and associated plotting functions to visualize each sample independently.
+
+```{r fig.width=5, fig.height=8}
+# Split by sample
+covid.list <- SplitObject(covid.combined, split.by = "orig.ident")
+# Find variable features for each sample separately
+covid.list <- lapply(covid.list, function(sample) {
+  FindVariableFeatures(sample, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+})
+# Inspect one sample, notice "2000 variable features"
+covid.list[1]
+# plot
+plots <- lapply(covid.list, function(sample) {
+  p <- VariableFeaturePlot(sample) + theme(legend.position = "bottom") +
+    ggtitle(unique(sample$orig.ident))
+  LabelPoints(plot = p,
+              points = head(VariableFeatures(sample), 10),
+              repel = TRUE)
+})
+ggarrange(plotlist = plots, nrow=3, ncol=1, common.legend=TRUE)
+```
+
+Interestingly, the severe sample has an entirely different set of top 10 most variable genes compared to healthy and mild, between which there is some overlap with CCL4 and MT1G.
+
+## Scaling
+
+The next step is to apply a transformation to scale gene expression such that mean expression is 0 and variance across cells is 1. This is a standard step prior to PCA to ensure that genes with a higher magnitude of expression do not overshadow genes with lower magnitudes of expression. We choose to apply this to just the 2000 most variable genes by default, but note that an additional parameter `features = rownames(covid.combined)` may be added to apply scaling to all genes. This enables further flexibility downstream in case we want to visualize all genes.
+
+Additionally, we opt to regress out mitochondrial gene percent by using the parameter `vars.to.regress = "percent.mt"` as we saw quite a lot of variability in this variable earlier and it is typically regressed out. This step was not mentioned by the authors, but we feel it would help to remove this heterogeneity from our analysis.
+
+Final scaled values are stored in the `scale.data` layer.
+
+```{r}
+# Apply ScaleData function to all 3 samples
+covid.list <- lapply(covid.list, function(sample) {
+  ScaleData(sample,
+            vars.to.regress = "percent.mt")
+})
+# Inspect one sample, notice new layer
+covid.list[1]
+```
+
+## Integration
+
+Note that at this stage, replicate samples from the same experimental group may be integrated, as combining replicates will provide insight into intra-group variation compared to inter-group variation and reduce batch effects. In our analysis however, we are only analyzing one sample from each group, so there are no replicates to integrate. This is a notable limitation of our approach from the perspective of best practices, as the sample we have selected may not be representative of the other two excluded replicates. However, we believe this simplification adheres to the scope of this exploration, as our primary goal is gaining introductory exposure to the workflow.
+
+## Dimensionality Reduction with PCA
+
+```{r fig.height=3, fig.width=8}
+# Apply PCA to all 3 samples
+covid.list <- lapply(covid.list, function(sample) {
+  RunPCA(sample, features = VariableFeatures(object = sample))
+})
+# Inspect, notice "1 dimensional reduction calculated: pca"
+covid.list[1]
+
+# View PC1 and PC2
+plots <- lapply(covid.list, function(sample) {
+  DimPlot(sample, reduction = "pca") +
+    ggtitle(unique(sample$orig.ident)) +
+    theme(legend.position="none")
+})
+ggarrange(plotlist = plots, nrow=1, ncol=3)
+
+# View ElbowPlots
+plots <- lapply(covid.list, function(sample) {
+  ElbowPlot(sample, ndims=50) +
+    ggtitle(unique(sample$orig.ident))
+})
+ggarrange(plotlist = plots, nrow=1, ncol=3)
+
+```
+
+These graphs exhibit the characteristic steep decline followed by a flattening-out of the curve, because the first few PCs explain the majority of the variation in the dataset. At this point, one must determine how many of the top PCs to select to sufficiently explain the noise in the dataset. The curve appears to flatten out for all 3 samples at around 15 PCs, beyond which we risk including uninformative PCs that represent only random noise. However, Liao et al. mention that they opted for the default of the top 50 principle components for downstream clustering and visualization.
+
+**Thus, another limitation in Liao et al.'s approach was the use of arguably excessive PCs that may contribute to noisiness downstream.**
+
+## Cluster and UMAP
+
+Using the top 50 PCs per Liao et al.'s approach, we use `Findneighbors()` and `FindClusters()` to cluster together cells with similar expression profiles. We then use UMAP to visualize these clusters. This is still done on a per-sample basis.
+
+```{r fig.height=3, fig.width=8}
+nPC <- 50
+
+covid.list <- lapply(covid.list, function(sample) {
+  sample <- FindNeighbors(sample, dims=1:nPC, verbose=FALSE)
+  sample <- FindClusters(sample, verbose = FALSE)
+  RunUMAP(sample, dims = 1:nPC, verbose = FALSE)
+})
+
+plots <- lapply(covid.list, function(sample) {
+  DimPlot(sample, reduction="umap", pt.size=.02) +
+    ggtitle(unique(sample$orig.ident)) +
+    theme(legend.position="none") +
+    labs(subtitle = paste(length(unique(sample$seurat_clusters)), "clusters"))
+})
+ggarrange(plotlist=plots, nrow=1, ncol=3)
+```
+
+Out of curiosity, we re-run these same steps using a smaller number of PCs to see how this changes cluster count and cluster formation visually.
+
+```{r fig.height=3, fig.width=8}
+nPC <- 15
+covid.list <- lapply(covid.list, function(sample) {
+  sample <- FindNeighbors(sample, dims=1:nPC, verbose=FALSE)
+  sample <- FindClusters(sample, verbose = FALSE)
+  RunUMAP(sample, dims = 1:nPC, verbose = FALSE)
+})
+plots <- lapply(covid.list, function(sample) {
+  DimPlot(sample, reduction="umap", pt.size=.02) +
+    ggtitle(unique(sample$orig.ident)) +
+    theme(legend.position="none") +
+    labs(subtitle = paste(length(unique(sample$seurat_clusters)), "clusters"))
+})
+ggarrange(plotlist=plots, nrow=1, ncol=3)
+```
+
+# Reflection
+
+We have successfully reproduced a typical scRNA-seq workflow on 3 samples derived from bronchoalveolar immune cells taken from the lung of patients under 3 conditions: mild COVID-19, severe COVID-19, and healthy control. We explored the workflow starting from FASTQ files, to feature barcode matrices using cellranger, to cell type clusters using Seurat.
+
+These steps were skipped by Phipson et al. as they used the final annotated cell type clusters to test for statistical significance in cell type proportions among the 3 experimental conditions. Through our careful exploration, we noted the following 2 limitations in their approach:
+
+1. Cells were filtered using the same thresholds across all samples despite samples exhibiting vast differences in the distribution of genes per cell, UMI count per cell, and mitochondrial gene percent per cell. These differences were already identified in the web summary generated by cellranger *(Section 2.4)* and confirmed with kernel density plots during the QC and cell filtering steps *(Section 3.2)*. We surmised a likely result of this is retention of doublets and dead cells, which will certainly introduce meaningless noise downstream and impact final cell type proportions. The use of the Python tool `scrublet` may improve results but this is outside the scope of our Seurat exploration.
+2. A default of the 50 top Principle Components were selected for clustering and UMAP visualization. Based on our finding, the variation in the data plateaus well before the 50th PC. The inclusion of uninformative PCs may have introduced excessive random noise into the critical clustering step, which ultimately will impact the final observed cell type proportions utilized by Phipson et al.
+
+# References
+
+Liao, M., Liu, Y., Yuan, J. et al. Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19. Nat Med 26, 842–844 (2020). <https://doi.org/10.1038/s41591-020-0901-9>
+
+Phipson, B., Sim, C. B., Porrello, E. R., Hewitt, A. W., Powell, J., & Oshlack, A. (2022). propeller: testing for differences in cell type proportions in single cell data. Bioinformatics (Oxford, England), 38(20), 4720–4726. <https://doi.org/10.1093/bioinformatics/btac582>
