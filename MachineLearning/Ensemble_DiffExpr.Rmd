@@ -1,0 +1,1003 @@
+---
+title: "Development and evaluation of three machine learning classification models to predict differential gene expression"
+author: "Courtney Wong"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE)
+```
+
+```{r lib, echo=FALSE}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(knitr)
+  library(Hmisc)
+  library(caret)
+  library(psych)
+  library(ggfortify)
+  library(summarytools)
+  library(ggpubr)
+  library(gmodels)
+  library(formattable)
+  library(pROC)
+  library(ggrepel)
+})
+```
+
+# Motivation
+
+Dou et al. (2015) demonstrates the use of a Naive Bayes classifier to identify differentially expressed genes in RNA-seq data. They use 3 features extracted from RNA sequencing data (**FC = Fold Change** in gene expression relative to a control, **ARPK = averaged reads per kilobase** which is a modified metric for read depth normalized by read length, and **GCC = relative GC Content**) to predict whether each observation, a gene, is differentially expressed relative to a control. This approach is novel because read depth (ARPK) and GC content (GCC), which are known to cause biases in expression quantification, are accounted for on top of the typical measure for differential expression, fold change.
+
+In this exercise, we aim to develop three additional models to classify differential gene expression and evaluate their performance against the approach taken by Dou et al. This is followed by an investigation into how outliers and missing values impact each model, tuning each model's hyperparameters, and building homogeneous and heterogeneous ensembles to further boost model performance.
+
+# Data Acquisition
+
+We previously acquired the zipped data files provided by Dou et al. at <http://sysbio.unl.edu/GExposer/>, unzipped and converted the training dataset `training.txt` into a CSV, then uploaded it to GitHub. This dataset contains 5354 observations (genes) and 3 continuous features alongside the target variable, a classification of either differentially expressed (DE) or not differentially expressed (NDE).
+
+Below, we load the data directly from the GitHub URL. We then fix some formatting (add feature names as described in the paper) and create a variable to keep track of the columns that are numeric.
+
+```{r AcquireData}
+# Import from URL
+df <- read.csv("https://raw.githubusercontent.com/cwcourtney/cwcourtney.github.io/refs/heads/main/MachineLearning/DiffExpr_training.csv",
+               header=FALSE, fileEncoding="UTF-8-BOM")
+# Add feature names
+colnames(df) <- c("GeneID", "FoldChange", "AvgReadPerKB", "GC", "DiffExpr")
+# Track numeric columns
+numeric_cols <- which(sapply(df, is.numeric))
+```
+
+# Data Exploration
+
+Next, we do some initial exploration of the data.
+
+## Distribution of Continuous Features
+
+In examining the distribution of the continuous features (`FoldChange`, `AvgReadPerKB`, and `GC`) below, we note the following:
+
+1.  There are **no missing values**.
+2.  Although values are already similar in magnitude, all between 0 and 1, we can **normalize** to further ensure that `GC` values span the same range as the other two features.
+3.  There appears to be a subpopulation of **outliers** with the value of 1.0 for `AvgReadPerKB`. Based on the formula described by Dou et al. (Section 2.1 of their paper) to calculate ARPK, we suspect this is an artifact of the calculation, because the only way to mathematically achieve a value of 1.0 is if the mean aligned read count for the given transcript in all replicates are close to zero. Transcripts with low read depth are unreliable, so we strongly recommend removing these values.
+4.  Features are **not normally distributed, even after applying various transformations.** We should therefore avoid algorithms that assume a normal distribution. We should also use the IQR method rather than the Z-score method for detecting outliers.
+
+```{r ExploreData}
+# Check structure
+str(df)
+summary(df)
+# Check for missing values
+apply(df, MARGIN=2, function(x) sum(is.na(x)))
+# Inspect the distribution
+hist.data.frame(df[2:5]) # First column is ID
+# Test for normality
+set.seed(-1)
+rand_ind <- sample(seq(1,nrow(df)),
+       size = 5000,
+       replace = FALSE)
+df_subset <- df[rand_ind, numeric_cols]
+original <- apply(df_subset, MARGIN=2, function(x) shapiro.test(x)$p.value)
+log10 <- apply(df_subset, MARGIN=2, function(x) shapiro.test(log10(x+.001))$p.value)
+square <- apply(df_subset, MARGIN=2, function(x) shapiro.test(x^2)$p.value)
+sqrt <- apply(df_subset, MARGIN=2, function(x) shapiro.test(sqrt(x))$p.value)
+inverse <- apply(df_subset, MARGIN=2, function(x) shapiro.test(1/(x+.001))$p.value)
+rm(df_subset) # Clean up
+rbind(original, log10, square, sqrt, inverse) %>% as.data.frame()
+```
+
+## Colinearity and Correlation
+
+It is important to check for any colinearity and correlation that may exist within our data to avoid redundancy and understand which features are most heavily contributing to the target variable prediction. We use the Spearman correlation coefficient instead of the default Pearson because the data are not normally distributed. We note the following:
+
+5.  From the pairs panels, there appears to be **no colinearity** among our three features.
+6.  From the violin plots, the feature that appears to be distributed most distinctly between DE vs NDE classifications is `FoldChange`. This suggests that **`FoldChange` is likely the strongest contributor, but there may be finer, unseen contributions from the other two features.**
+7.  From the scatterplots, we again see the greatest separation along `FoldChange`, but we notice a new pattern where **low `AvgReadPerKB` may also be a good predictor when paired with low `FoldChange`**. `GC` still does not appear to contribute much.
+
+```{r CheckCorrelations}
+# Explore correlations among continuous features
+pairs.panels(df[numeric_cols], method="spearman")
+# Coincidence with target variable
+plots <- map(colnames(df[numeric_cols]), ~ {
+  df %>%
+    ggplot(aes(x=DiffExpr, y=!!sym(.x), fill=DiffExpr)) +
+    geom_violin(position="dodge") +
+    theme_bw()
+})
+# Violin plots
+ggarrange(plotlist=plots, nrow=1, ncol=3, common.legend=TRUE, legend="bottom")
+# Scatter plots
+df %>%
+  ggplot(aes(x=FoldChange, y=AvgReadPerKB, color=DiffExpr)) +
+  geom_point() +
+  theme_bw()
+df %>%
+  ggplot(aes(x=FoldChange, y=GC, color=DiffExpr)) +
+  geom_point() +
+  theme_bw()
+```
+
+## Outliers
+
+Next, we identify outliers in the dataset. The Z-score method is not appropriate for our dataset as we previously identified in **Observation #4** that none of the features are normally distributed, so we use the IQR method instead.
+
+Below, we build a function to index values that are beyond 1.5 IQR of the first and third quartiles and inspect them.
+
+```{r CheckOutliers}
+# Create function to identify indices of IQR outliers
+index_IQR_outliers <- function(x) {
+  iqr <- IQR(x)
+  q1 <- as.numeric(quantile(x, 0.25))
+  q3 <- as.numeric(quantile(x, 0.75))
+  return(x < q1 - 1.5*iqr | x > q3 + 1.5*iqr)
+}
+# List first 10 outliers for all numeric variables
+lapply(df[numeric_cols], function(x) {head(x[index_IQR_outliers(x)], n=10)})
+# Create a mask that indicates whether any feature was an outlier for that row
+mask <- lapply(df[numeric_cols], function(x) {index_IQR_outliers(x)}) %>%
+  bind_cols() %>%
+  apply(MARGIN=1, any)
+# Check distribution of outliers
+hist.data.frame(df[mask,2:5])
+# Check distribution of remaining data
+hist.data.frame(df[!mask,2:5])
+```
+
+This approach identified `r sum(mask)` outliers total. Of these, `r nrow(filter(df[mask,], AvgReadPerKB==1))` observations have an `AvgReadPerKB` value of 1.0, which we previously identified in **Observation #3** to be an artifact of the calculation due to extremely low read count. However, we see no reason to omit the rest of the outliers, as they are true biological observations. Thus, we suggest to omit only observations where `AvgReadPerKB` equals 1.0.
+
+
+## Principle Components
+
+Our dataset has relatively few dimensions, but it may be interesting to identify principle components and then check the loadings to understand the contribution of each feature toward the PCs.
+
+```{r CheckPCs}
+pc <- prcomp(select(df, -c(DiffExpr, GeneID)), scale. = TRUE)
+summary(pc)
+pc$rotation
+autoplot(pc, data=df, color="DiffExpr")
+```
+
+Interestingly, PC1 (which contains roughly equal contributions from `AvgReadPerKB` and `GC` mostly) explains roughly the same amount of variance as PC2 (which consists mostly of `FoldChange`). This confirms our prior intuition that `FoldChange` has a dominant contribution, but `AvgReadPerKB` and `GC` certainly have a contribution as well. This supports the initial hypothesis that there are factors other than `FoldChange` that can help us make an accurate prediction.
+
+# Data Cleaning and Shaping
+
+## Feature Selection
+
+The first column, `GeneID`, is not a useful feature for prediction. Below, we preserve it as a row name and remove it from our data. Subsequently, this means we need to update the variable storing the indices of our numeric columns.
+
+```{r SelectFeatures}
+# Remove meaningless ID column
+rownames(df) <- df$GeneID
+df <- df[,2:5]
+# Update tracker for numeric columns
+numeric_cols <- which(sapply(df, is.numeric))
+```
+
+## Feature Encoding
+
+Since we did not read strings as factors during data import, we can factorize the target variable now using one-hot encoding. This is fairly straightforward for a binary variable: 0 will denote absence of differential expression (NDE) and 1 will denote presence of differential expression (DE).
+
+```{r EncodeFeatures}
+# Factorize target feature as 0 or 1
+df$DiffExpr <- factor(as.numeric(df$DiffExpr=="DE"), levels=c(0,1), labels = c("NDE", "DE"), ordered = TRUE)
+```
+
+## Invalid Data, Outliers, and Missing Values
+
+We previously identified in **Observation #3** that values of 1.0 for `AvgReadPerKB` is likely the result of a calculation artifact from transcripts with extremely low read count. We also identified more outliers in addition to these 1.0 `AvgReadperKB` values, which we discourage omitting but can explore the impact of nonetheless. Lastly, although we identified in **Observation #1** our data have no missing values, it would be interesting to test the effect of mean imputation in the event that we did encounter missing values. Thus, we create three different dataframes below:
+
+-   `df.NoInval`: Invalid values (1.0 for `AvgReadPerKB`) removed
+-   `df.NoOut`: All outliers removed, including the above
+-   `df.NoOut_ImpMis`: 5% of each feature randomly selected to be imputed with the mean (post-outlier removal). The target variable is untouched.
+
+```{r HandleInvalOutlierMissing}
+# Create df with invalid values removed
+df.NoInval <- filter(df, AvgReadPerKB != 1)
+# Create df with all outliers removed
+df.NoOut <- df[!mask,]
+# Create df with random values replaced with mean imputed values
+random_impute <- function(x, prop) {
+  rand_ind <- sample(seq(1, length(x)),
+                     size = floor(length(x) * prop),
+                     replace = FALSE)
+  x[rand_ind] <- mean(x)
+  cat(length(rand_ind), "values randomly replaced with imputed mean\n")
+  return(x)
+}
+set.seed(123)
+df.NoOut_ImpMis <- cbind(as.data.frame(lapply(df.NoOut[numeric_cols], function(x) {random_impute(x, 0.05)})),
+                         DiffExpr = df.NoOut$DiffExpr)
+```
+
+To make our downstream code more concise, we store these three dataframes into a list, then check their new distributions.
+
+```{r StoreDFsIntoList}
+# Store all variations in a list
+df_list <- list(df = df,
+                df.NoInval = df.NoInval,
+                df.NoOut = df.NoOut,
+                df.NoOut_ImpMis = df.NoOut_ImpMis)
+# Create a function that neatly prints distributions of all df's in a list
+plot_dists <- function(df, name) {
+  hist.data.frame(df, mtitl=name)
+}
+Map(plot_dists, df_list, names(df_list))
+# Clear memory
+rm(list=c("df", "df.NoInval", "df.NoOut", "df.NoOut_ImpMis"))
+```
+
+We make the following observations on these new distributions:
+
+7.  From comparing `df.NoInval` to the original `df`, the invalid 1.0 `AvgReadPerKB` observations tend to have extremely high `FoldChange` and NDE classification.
+8.  From comparing `df.NoOut` to `df.NoInval` next, the distribution of `AvgReadPerKB` is definitely less right-skew. This removal seems to have impacted NDE classifications more than DE.
+9.  From comparing `dfNoOut_ImpMis` to `df.NoOut`, we can clearly see the result of mean-imputation from the sudden peak at the middle of the curves. It will be interesting to test how our models handle such unnatural distributions.
+
+## Feature Engineering
+
+Biologically, we know that the average GC content of the human transcriptome is roughly 50%. Perhaps the absolute distance from this average is a useful metric, as the relationship between GC content and differential expression could be bimodal rather than linear. We create a new feature below, `GCFromAvg`, that indicates the absolute distance in % from the gene's GC content from average.
+
+```{r CreateNewFeature}
+df_list <- map(df_list, function(x) {
+  x %>%
+    mutate(GCFromAvg = abs(GC - 0.5), .after = "GC")
+})
+# Check for correlation
+pairs.panels(df_list$df)
+# Update tracker for numeric columns
+numeric_cols <- which(sapply(df_list[[1]], is.numeric))
+```
+
+## Feature Transformation and Normalization
+
+Below, we test for normality of the dataset again, but this time post-outlier removal and under various transformations. Still, according to the Shapiro Wilk test, none of the features are normally distributed as all p-values are far smaller than 0.05. Thus, applying a transformation of features to adjust the distribution is pointless, and we should be mindful to avoid methods that require normally distributed data.
+
+```{r CheckTransformations}
+# Test for normality after outlier removal
+original <- apply(df_list$df.NoOut[numeric_cols], MARGIN=2,
+                  function(x) shapiro.test(x)$p.value)
+log10 <- apply(df_list$df.NoOut[numeric_cols], MARGIN=2,
+               function(x) shapiro.test(log10(x+.001))$p.value)
+square <- apply(df_list$df.NoOut[numeric_cols], MARGIN=2,
+                function(x) shapiro.test(x^2)$p.value)
+sqrt <- apply(df_list$df.NoOut[numeric_cols], MARGIN=2,
+              function(x) shapiro.test(sqrt(x))$p.value)
+inverse <- apply(df_list$df.NoOut[numeric_cols], MARGIN=2,
+                 function(x) shapiro.test(1/(x+.001))$p.value)
+rbind(original, log10, square, sqrt, inverse) %>% as.data.frame()
+```
+
+This also means that we should use min-max normalization rather than Z-score normalization to standardize the values to span [0,1], as we noted in **Observation #2**. We do this below.
+
+```{r ApplyNormalization}
+# Create function
+normalize <- function(x) {
+  (x-min(x))/(max(x)-min(x))
+}
+# Apply to dataframe
+df_list <- map(df_list, function(x) {
+  cbind(as.data.frame(lapply(x[numeric_cols], normalize)),
+          DiffExpr = x$DiffExpr) # Append back the target feature
+})
+# Inspect
+lapply(df_list, summary)
+```
+
+# Model Construction
+
+## Partitioning into Training & Validation Subsets (Holdout Method)
+
+We first use the holdout method to partition each dataset into 80% training and 20% validation. This is a fairly standard split ratio.
+
+```{r PartitionHoldout}
+train_list <- list()
+val_list <- list()
+for (ii in seq_along(df_list)) {
+  set.seed(-1)
+  # Randomly generate indices to partition for training data
+  train_ind <- createDataPartition(df_list[[ii]]$DiffExpr, times=1, p=0.80)[[1]]
+  
+  # Add randomly indexed data to list, preserving original name of df
+  train_list[[names(df_list)[ii]]] <- df_list[[ii]][train_ind, ]
+  val_list[[names(df_list)[ii]]] <- df_list[[ii]][-train_ind, ]
+}
+# Confirm ratio of classes is consistent between train vs val
+prop.table(table(train_list$df$DiffExpr))
+prop.table(table(val_list$df$DiffExpr))
+```
+
+Note that, since we set the seed each time we partition, `df.NoOut` and `df.NoOut_ImpMis` will contain the same observations. This way, we can isolate the effect of imputation and study it independently later.
+
+## Partitioning into k Folds (k-fold Cross Validation Method)
+
+Another common approach for partitioning the dataset is the k-fold cross validation method, where the data is divided into *k* subsets of equal size, and the model is trained *k* times, each time using one subset for testing and the remaining *k-1* subsets for training. We use this approach for partitioning just the `df.NoInval` dataset below; we believe this dataset to be the most appropriate from a data pre-processing perspective and would like to verify our assessment of performance using a second partitioning method on this dataset.
+
+```{r PartitionkCV}
+set.seed(-1)
+folds <- createFolds(df_list$df.NoInval$DiffExpr, k=10)
+train_folds <- lapply(folds, function(x) {
+  df_list$df.NoInval[-x, ]
+})
+val_folds <- lapply(folds, function(x) {
+  df_list$df.NoInval[x, ]
+})
+```
+
+## Naive Bayes Model (Re-)Creation
+
+We (re-)create the model used by Dao et al. below, Naive Bayes. We suspect this model will not perform as well as the three we wish to implement because it relies on the assumption that all features are equally important and independent, and we have already identified previously that `FoldChange` is likely to be the biggest contributor. It will be informative to re-create the model in our own environment and compare to the other three.
+
+```{r NaiveBayesModel}
+library(e1071)
+my_naiveBayes <- function(df_train, df_val) {
+  m <- naiveBayes(x = select(df_train, -DiffExpr),
+                  y = df_train$DiffExpr)
+  # Obtain raw probabilities of being differentially expressed
+  predict(m, select(df_val, -DiffExpr), type="raw")[,"DE"]
+}
+set.seed(-1)
+HoldoutPreds.nb <- Map(my_naiveBayes, train_list, val_list)
+kCVPreds.nb <- Map(my_naiveBayes, train_folds, val_folds)
+```
+
+## kNN Model Creation
+
+We create a kNN classifier with a k value set to the square root of the number of observations in the training set, a good starting place. kNN is a good model for our application because there are few features, a distance metric can easily be defined as all features are numeric, there are no missing values, and it is reasonable to presume that DE genes share similar characteristics, as do NDE genes.
+
+```{r kNNModel}
+library(class)
+my_knn <- function(df_train, df_val) {
+  knn(train = select(df_train, -DiffExpr),
+      test = select(df_val, -DiffExpr),
+      cl = df_train$DiffExpr,
+      k = round(sqrt(nrow(df_train)), 0))
+}
+set.seed(-1)
+HoldoutPreds.knn <- Map(my_knn, train_list, val_list)
+kCVPreds.knn <- Map(my_knn, train_folds, val_folds)
+```
+
+## Neural Network Model Creation
+
+We create a neural network classifier with default settings below. A neural network excels when the data contain more complex, non-obvious patterns, and it also makes few assumptions about the underlying data, making it quite versatile. However, as they are prone to over-fitting, we ought to exercise caution when tuning hyperparameters.
+
+```{r NeuralNetworkModel}
+library(neuralnet)
+my_neuralnet <- function(df_train, df_val) {
+  m <- neuralnet(DiffExpr == "DE" ~ ., data=df_train)
+  predict(m, select(df_val, -DiffExpr))
+}
+set.seed(-1)
+HoldoutPreds.nn <- Map(my_neuralnet, train_list, val_list)
+kCVPreds.nn <- Map(my_neuralnet, train_folds, val_folds)
+```
+
+## Support Vector Machine Model Creation
+
+Lastly, we create a support vector machine classifier with default settings below. This is another model that excels when the data contain more complex, non-obvious patterns, and it is a good option for binary classification as it attempts to linearly separate the data.
+
+```{r SupportVectorMachineModel}
+library(kernlab)
+my_svm <- function(df_train, df_val) {
+  m <- ksvm(DiffExpr ~ ., data=df_train)
+  predict(m, select(df_val, -DiffExpr))
+}
+set.seed(-1)
+HoldoutPreds.svm <- Map(my_svm, train_list, val_list)
+kCVPreds.svm <- Map(my_svm, train_folds, val_folds)
+```
+
+# Model Evaluation
+
+## Properly Formatting Predictions
+
+Recall that we partitioned 4 different datasets using the simple Holdout Method, each into 80% training and 20% testing. We would like to evaluate the fit of our three models on each of those datasets to understand the impact of outlier removal and missing values.
+
+-   `df`: original unfiltered dataframe containing all `r nrow(train_list$df) + nrow(val_list$df)` observations
+-   `df.NoInval`: suggested filtering strategy, with all artifactual 1.0 `AvgReadPerKB` values removed (`r nrow(train_list$df.NoInval) + nrow(val_list$df.NoInval)` observations)
+-   `df.NoOut`: all observations containing an outlier in any feature removed (`r nrow(train_list$df.NoOut) + nrow(val_list$df.NoOut)` observations)
+-   `df.NoOut_ImpMis`: same as above but 5% of observations per feature were randomly selected for mean imputation (`r nrow(train_list$df.NoOut_ImpMis) + nrow(val_list$df.NoOut_ImpMis)` observations)
+
+We first check the format of the predictions. This is important because some model assessment methods such as `roc()` from the `pROC` package require a very specific format: ordered factors.
+
+```{r CheckOutputFormat}
+str(HoldoutPreds.nb$df)
+str(HoldoutPreds.knn$df)
+str(HoldoutPreds.nn$df)
+str(HoldoutPreds.svm$df)
+```
+
+The KNN and SVM output is already factorized but the order must be specified. The Naive Bayes and Neural Network outputs are numeric, representing the percent chance of being DE, and must be discretized into ordered DE/NDE factors.
+
+Before we do this conversion, it may be interesting to see how well the NB and NN models agree with each other. We plot this below on just one of the datasets, `df.NoInval`.
+
+```{r CheckNB-NNAgreement}
+data.frame(nb = as.numeric(HoldoutPreds.nb$df.NoInval), nn = as.numeric(HoldoutPreds.nn$df.NoInval)) %>%
+  ggplot(aes(x=nb, y=nn)) +
+  geom_point() +
+  theme_bw() +
+  labs(x = "DE Probability with Naive Bayes",
+       y = "DE Probability with Neural Network")
+```
+
+It makes sense that the upper and lower extremes have excellent agreement, as these are the cases where it is very obvious whether the gene is DE or NDE. Interestingly, there are far more plots in the lower right half of the plot than the upper left, suggesting that Naive Bayes tends to be more confident in predicting DE than the Neural Network and thus predicts DE more frequently.
+
+Now, we apply the factorization as previously discussed on all predictions and confirm using `str()`.
+
+```{r FormatOutputs}
+format_output <- function(x) {
+  # Discretize if continuous
+  if (is.numeric(x)) {
+    x <- ifelse(x > 0.5, 1, 0)
+  # Otherwise, set DE as 1 and NDE as 0
+  } else {
+    x <- as.numeric(x == "DE")
+  }
+  # Define factor order
+  factor(x, levels=c(0,1), labels=c("NDE", "DE"), ordered=TRUE)
+}
+
+HoldoutPreds.nb <- lapply(HoldoutPreds.nb, format_output)
+HoldoutPreds.knn <- lapply(HoldoutPreds.knn, format_output)
+HoldoutPreds.nn <- lapply(HoldoutPreds.nn, format_output)
+HoldoutPreds.svm <- lapply(HoldoutPreds.svm, format_output)
+
+kCVPreds.nb <- lapply(kCVPreds.nb, format_output)
+kCVPreds.knn <- lapply(kCVPreds.knn, format_output)
+kCVPreds.nn <- lapply(kCVPreds.nn, format_output)
+kCVPreds.svm <- lapply(kCVPreds.svm, format_output)
+
+# Inspect
+str(HoldoutPreds.nb)
+str(kCVPreds.nb[[1]])
+
+```
+
+## Evaluation of Fit
+
+Next, we calculate some statistics to gauge model performances on each of the training sets by creating a custom function below that leverages the `caret` package.
+
+```{r ManualCalculation, eval=FALSE, include=FALSE}
+CalcStats <- function(df_val, p, name) {
+  conf_mat <- table(df_val$DiffExpr, p)
+  stats <- list(dataset = name,
+                true_neg = conf_mat[1,1],
+                true_pos = conf_mat[2,2],
+                false_neg = conf_mat[2,1],
+                false_pos = conf_mat[1,2],
+                total = sum(conf_mat)) %>%
+    bind_rows() %>%
+    mutate(Accuracy = (true_pos + true_neg) / total * 100,
+           Sensitivity.Recall = true_pos / (true_pos + false_neg) * 100,
+           Specificity = true_neg / (true_neg + false_pos) * 100,
+           PosPredValue.Precision = true_pos / (true_pos + false_pos) * 100,
+           NegPredValue = true_neg / (true_neg + false_neg) * 100,
+           F1Score = 2 * PosPredValue.Precision * Sensitivity.Recall / (Sensitivity.Recall + PosPredValue.Precision),
+           Kappa = confusionMatrix(data=p, reference=df_val$DiffExpr, positive="DE")$overall["Kappa"])
+  return(stats)
+}
+```
+
+```{r CalculateStatsFunction}
+CalcStats <- function(df_val, p, name) {
+  conf_mat <- confusionMatrix(data=p, reference=df_val$DiffExpr, positive="DE")
+  stats <- list(Data = name,
+                Accuracy = conf_mat$overall["Accuracy"],
+                TruePos = conf_mat$byClass["Sensitivity"],
+                TrueNeg = conf_mat$byClass["Specificity"],
+                PosPredValue = conf_mat$byClass["Precision"],
+                NegPredValue = conf_mat$byClass["Neg Pred Value"],
+                F1 = conf_mat$byClass["F1"],
+                Kappa = conf_mat$overall["Kappa"],
+                AUC = as.numeric(auc(roc(response=df_val$DiffExpr, predictor=p))))
+  return(stats)
+}
+```
+
+We `Map()` this function to each dataset for each of the 3 models to cleanly display the metrics below. Note that the k-fold method requires `lapply()` to average these metrics across all folds. The code used to produce the statistics table for NB is echoed below; similar code was used for the other 3 models but are hidden for succinctness.
+
+```{r CalcStats_NB}
+stats.nb <- Map(CalcStats, val_folds, kCVPreds.nb, names(val_folds)) %>%
+  bind_rows() %>%
+  select(-Data) %>%
+  apply(MARGIN=2, mean) %>% t() %>%
+  as.data.frame() %>%
+  mutate(Data = "df.NoInval", Method = "k-fold", .before = "Accuracy") %>%
+  bind_rows(bind_rows(Map(CalcStats, val_list, HoldoutPreds.nb, names(val_list)))) %>%
+  mutate(Method = ifelse(is.na(Method), "Holdout", Method)) %>%
+  arrange(Data)
+stats.nb %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="Naive Bayes", align="l")
+```
+
+```{r CalcStats_Others, echo=FALSE}
+stats.knn <- Map(CalcStats, val_folds, kCVPreds.knn, names(val_folds)) %>%
+  bind_rows() %>%
+  select(-Data) %>%
+  apply(MARGIN=2, mean) %>% t() %>%
+  as.data.frame() %>%
+  mutate(Data = "df.NoInval", Method = "k-fold", .before = "Accuracy") %>%
+  bind_rows(bind_rows(Map(CalcStats, val_list, HoldoutPreds.knn, names(val_list)))) %>%
+  mutate(Method = ifelse(is.na(Method), "Holdout", Method)) %>%
+  arrange(Data)
+stats.knn %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="kNN", align="l")
+
+stats.nn <- Map(CalcStats, val_folds, kCVPreds.nn, names(val_folds)) %>%
+  bind_rows() %>%
+  select(-Data) %>%
+  apply(MARGIN=2, mean) %>% t() %>%
+  as.data.frame() %>%
+  mutate(Data = "df.NoInval", Method = "k-fold", .before = "Accuracy") %>%
+  bind_rows(bind_rows(Map(CalcStats, val_list, HoldoutPreds.nn, names(val_list)))) %>%
+  mutate(Method = ifelse(is.na(Method), "Holdout", Method)) %>%
+  arrange(Data)
+stats.nn %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="Neural Network", align="l")
+
+stats.svm <- Map(CalcStats, val_folds, kCVPreds.svm, names(val_folds)) %>%
+  bind_rows() %>%
+  select(-Data) %>%
+  apply(MARGIN=2, mean) %>% t() %>%
+  as.data.frame() %>%
+  mutate(Data = "df.NoInval", Method = "k-fold", .before = "Accuracy") %>%
+  bind_rows(bind_rows(Map(CalcStats, val_list, HoldoutPreds.svm, names(val_list)))) %>%
+  mutate(Method = ifelse(is.na(Method), "Holdout", Method)) %>%
+  arrange(Data)
+stats.svm %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="Support Vector Machine", align="l")
+```
+
+Based on these statistics, we can make the following observations:
+
+-   **Accuracy** tell us the success rate of the model.
+
+    -   All 4 models fall in a similar range of accuracy for all 5 datasets used (84-89%).
+    -   Removal of outliers actually reduces the accuracy of all 4 models, but only slightly. This can happen when so-called outliers actually contain valuable information at either end of the spectrum. In our case, these are the genes with extremely high `AvgReadPerKB` that are non-differentially expressed.
+    -   Randomly simulating missing data and mean-imputing them further reduces accuracy slightly. This is logical as doing so introduces noise into the data.
+
+-   The **True Positive Rate** (a.k.a. Sensitivity, Recall) tells us how frequently the model correctly identifies positive cases as positive.
+
+    -   Naive Bayes performs best per this metric initially, but this advantage is lost when outliers are removed and missing values are simulated.
+
+-   The **True Negative Rate** (a.k.a. Specificity) tell us how frequently the model correctly identifies negative cases as negative. *Recall that there are far more negative (NDE) cases than positive (DE).*
+
+    -   kNN, the Neural Network, and SVM perform similarly per this metric and are hardly impacted by exclusion of outliers or missing values, while Naive Bayes lags behind.
+    -   This suggests that Naive Bayes is better at correctly identifying positive cases while kNN/Neural Network are better at identifying negative cases.
+
+-   The **Positive Predictive Value** (a.k.a. Precision) tells us how frequently the model's positive predictions were truly positive. *This is very relevant in bioinformatics, as false positives are extremely common in testing for differential expression.*
+
+    -   kNN, the Neural Network, and SVM perform similarly while Naive Bayes lags behind.
+    -   This along with our notes from above suggest that Naive Bayes tends to guess positive more frequently. This takeaway matches the scatterplot from earlier, where we noted that NB tends to lean more toward DE than NDE compared to the Neural Network!
+
+-   The **Negative Predictive Value** tells us how frequently the model's negative predictions were truly negative.
+
+    -   All 4 models perform similarly per this metric, with Naive Bayes slightly in the lead, and are impacted similarly when using different datasets.
+
+-   The **F1 Score** (a.k.a. F-measure, F-score) combines precision (Positive Predictive Value) and recall (True Positive Rate) into a single metric using a harmonic mean. This score is most relevant when precision and recall are equally important and desired. *For our case, this means we don't want to "miss" any true differentially expressed genes just as much as we don't want any false calls for a gene being differentially expressed. The former leads to incomplete information, while the latter leads to misleading information.*
+
+    -   All 4 models perform remarkably similarly, with kNN and SVM slightly in the lead.
+
+    -   The Neural Network appears to be most negatively impacted by outlier removal and imputation of missing values.
+
+-   The **Kappa** statistic is an adjusted measure of accuracy by account for the chance of a correct prediction from chance alone. *This is especially relevant for cases where there is severe class imbalance. In our case, the original dataset had `r sum(train_list$df$DiffExpr=="DE") + sum(val_list$df$DiffExpr=="DE")` DE classifications and `r sum(train_list$df$DiffExpr=="NDE") + sum(val_list$df$DiffExpr=="NDE")` NDE classifications, which is fairly imbalanced.*
+
+    -   Both kNN, the Neural Network, and SVM had comparable Kappa scores that indicate "good agreement". Naive Bayes was lower but still falls under "good agreement."
+
+    -   There is definitely room for improvement.
+
+-   The **AUC** is the Area Under the receiver operating characteristic (ROC) curve. The ROC curve plots the false positive rate (1 - Specificity) against the true positive rate (Sensitivity) to examine how the model trades off between detecting true positives while avoiding false positives. The area under this curve is typically calculated to easily compare two curves.
+
+    -   All 4 models perform remarkably similarly, with kNN slightly in the lead.
+
+    -   Their AUC value can be considered "Excellent", and a small improvement would grant them an "Outstanding."
+
+Now that we have understood the impact of outlier removal and missing data imputation on these models and confirmed that the k-fold cross validation technique yields similar statistics as the holdout method, let's proceed by selecting `df.NoInval` using the holdover method for the rest of our investigation. This dataset retains so-called outliers which we identified as valuable to our model while omitting genes with the artifactual `AvgReadsPerKB` value of 1.0. k-fold cross validation is a clever way of using the entire dataset for both training and testing, which is less prone to random chance than the holdout method, but the latter is more computationally efficient and we can see that they yielded similar results.
+
+```{r CleanWorkspace, include=FALSE}
+# Clean workspace
+rm(list=c("train_folds", "val_folds", "kCVPreds.knn", "kCVPreds.nb", "kCVPreds.nn", "kCVPreds.svm"))
+df.train <- train_list$df.NoInval
+df.val <- val_list$df.NoInval
+```
+
+# Model Tuning
+
+## Tuning Hyperparameters
+
+### Naive Bayes: Laplace smoothing
+
+```{r TuneNB}
+set.seed(-1)
+m <- naiveBayes(x = select(df.train, -DiffExpr),
+                y = df.train$DiffExpr,
+                laplace = 1)
+p <- predict(m, select(df.val, -DiffExpr), type="raw")[,"DE"] %>%
+  format_output()
+stats.nb.new <- CalcStats(df.val, p, "Laplace1")
+```
+
+We can see that enabling Laplace smoothing has no effect, because it is intended to correct for cases where an event never occurs for one or more class levels. This issue does not exist in our dataset.
+
+-   AUC: from `r formattable::percent(stats.nb[3,"AUC"])` to `r formattable::percent(stats.nb.new$AUC)`
+-   F1: from `r formattable::percent(stats.nb[3,"F1"])` to `r formattable::percent(stats.nb.new$F1)`
+-   Kappa: from `r formattable::percent(stats.nb[3,"Kappa"])` to `r formattable::percent(stats.nb.new$Kappa)`
+
+### kNN: k
+
+We previously set k (the number of nearest neighbors to consider) equal to the square root of the number of cases in the training set. In our case, our training set had `r nrow(df.train)` datapoints, meaning k was set to `r floor(sqrt(nrow(df.train)))`. This is typically a good starting point but we can investigate the impact of the value of k further.
+
+```{r TuneKNN}
+# Modify the function to take in a k_val
+my_knn <- function(df_train, df_val, k_val) {
+  knn(train = select(df_train, -DiffExpr),
+      test = select(df_val, -DiffExpr),
+      cl = df_train$DiffExpr,
+      k = k_val)
+}
+set.seed(-1)
+# Iterate through values of k ranging from 3 to 75
+stats.knn.new <- map(seq(3,75), function(k) {
+  # Apply model for the given k value
+  predictions <- my_knn(df.train, df.val, k)
+  # Reformat
+  predictions <- format_output(predictions)
+  # Calculate and return stats
+  CalcStats(df.val, predictions, k)
+}) %>%
+  bind_rows() %>%
+  rename(k = Data)
+# Inspect stats
+head(stats.knn.new)
+# Plot stats as a function of k value
+stats.knn.new %>%
+  select(k, F1, Kappa, AUC) %>%
+  pivot_longer(cols = c("F1", "Kappa", "AUC"),
+               names_to = "Statistic",
+               values_to = "Value") %>%
+  group_by(Statistic) %>%
+  mutate(is_max = Value==max(Value)) %>%
+  ungroup() %>%
+  ggplot(aes(x=k, y=Value, color=Statistic,
+             label = ifelse(is_max, paste("Max at (", k, ",", round(Value,2), ")", sep=""), NA))) +
+  geom_label_repel(size=3, box.padding=1, fill="white", nudge_y = -.03, nudge_x = 5) +
+  geom_line() +
+  geom_vline(xintercept = floor(sqrt(nrow(df.train))),
+             color = "grey",
+             linetype = "dashed") + 
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "kNN Model Performance With Varying k Values")
+```
+
+```{r SaveKNNResults, echo=FALSE, include=FALSE}
+optimal_k <- stats.knn.new$k[as.numeric(which.max(stats.knn.new$AUC))]
+optimal_auc <- formattable::percent(max(stats.knn.new$AUC))
+optimal_f1 <- formattable::percent(max(stats.knn.new$F1))
+optimal_kappa <- formattable::percent(max(stats.knn.new$Kappa))
+
+old_k <- floor(sqrt(nrow(df.train)))
+old_auc <- formattable::percent(stats.knn[3,"AUC"])
+old_f1 <- formattable::percent(stats.knn[3,"F1"])
+old_kappa <- formattable::percent(stats.knn[3,"Kappa"])
+```
+
+We can see that changing the value of k from `r old_k` to `r optimal_k` results in the following improvements:
+
+-   AUC: from `r old_auc` to `r optimal_auc`
+-   F1: from `r old_f1` to `r optimal_f1`
+-   Kappa: from `r old_kappa` to `r optimal_kappa`
+
+### Neural Network: Hidden Layers, Activation Function, and Algorithm
+
+By default, `neuralnet()` uses 1 hidden node in its topology to process signals from the input node before reaching the output node. By transforming the signal, hidden nodes bring complexity to the model. Our original model, using the default of 1 hidden node, can be visualized using `plot()`. Values in black text show the weights from each feature that were fed into the activation function to transform the signal, and values shown in blue text are bias terms that serve as constant adjustments.
+
+```{r PlotOldNN}
+plot(neuralnet(DiffExpr == "DE" ~ ., data=df.train), rep="best")
+```
+
+Below, we try to recreate the model with 2 hidden nodes instead.
+
+```{r TuneNN_HiddenNodes}
+set.seed(123)
+m <- neuralnet(DiffExpr == "DE" ~ ., data=df.train, hidden = 2)
+plot(m, rep="best")
+p <- predict(m, select(df.val, -DiffExpr))
+p <- format_output(p)
+stats.nn.new <- CalcStats(df.val, p, "2Hidden")
+```
+
+We can see that changing the number of hidden nodes from 1 to 2 results in the following (marginal) improvements:
+
+-   AUC: from `r formattable::percent(stats.nn[3,"AUC"])` to `r formattable::percent(stats.nn.new$AUC)`
+-   F1: from `r formattable::percent(stats.nn[3,"F1"])` to `r formattable::percent(stats.nn.new$F1)`
+-   Kappa: from `r formattable::percent(stats.nn[3,"Kappa"])` to `r formattable::percent(stats.nn.new$Kappa)`
+
+It may also be interesting to try a different activation function next.
+
+```{r TuneNN_ActFct}
+set.seed(123)
+m <- neuralnet(DiffExpr == "DE" ~ ., data=df.train, hidden = 2, act.fct="tanh")
+plot(m, rep="best")
+p <- predict(m, select(df.val, -DiffExpr))
+p <- format_output(p)
+stats.nn.new <- CalcStats(df.val, p, "2Hidden_tanh")
+```
+
+This change actually worsens the performance of the model from the original we created:
+
+-   AUC: from `r formattable::percent(stats.nn[3,"AUC"])` to `r formattable::percent(stats.nn.new$AUC)`
+-   F1: from `r formattable::percent(stats.nn[3,"F1"])` to `r formattable::percent(stats.nn.new$F1)`
+-   Kappa: from `r formattable::percent(stats.nn[3,"Kappa"])` to `r formattable::percent(stats.nn.new$Kappa)`
+
+We can also try different algorithms to calculate the neural network. The default is `rprop+`, which refers to resilient backpropagation with weight backtracking. Alternatively, we can test `rprop-` (resilient backpropagation without weight backtracking)
+
+```{r TuneNN_Algorithm}
+set.seed(123)
+m <- neuralnet(DiffExpr == "DE" ~ ., data=df.train, hidden = 2, algorithm="rprop-")
+plot(m, rep="best")
+p <- predict(m, select(df.val, -DiffExpr))
+p <- format_output(p)
+stats.nn.new <- CalcStats(df.val, p, "2Hidden_rprop-")
+```
+
+This does not give us any further improvement from adding an additional hidden node:
+
+-   AUC: from `r formattable::percent(stats.nn[3,"AUC"])` to `r formattable::percent(stats.nn.new$AUC)`
+-   F1: from `r formattable::percent(stats.nn[3,"F1"])` to `r formattable::percent(stats.nn.new$F1)`
+-   Kappa: from `r formattable::percent(stats.nn[3,"Kappa"])` to `r formattable::percent(stats.nn.new$Kappa)`
+
+### SVM: Cost and Kernel
+
+The cost parameter adjusts the penalty that the model applies when a point falls on the "wrong" side of the boundary. A higher cost parameter will produce a cleaner separation in the training data, but this comes with the risk of overfitting. A lower cost parameter produces a wider margin on the boundary, but this comes with the risk of missing out on finer patterns.
+
+Below, we test various values of the cost parameter.
+
+```{r TuneSVM_Cost}
+# Modify the function to take in a cost_val and kernel
+my_svm <- function(df_train, df_val, cost_val, kernel_type) {
+  m <- ksvm(DiffExpr ~ ., data=df_train, C=cost_val, kernel=kernel_type)
+  predict(m, select(df_val, -DiffExpr))
+}
+set.seed(-1)
+stats.svm.new <- map(c(1, seq(from=5, to=100, by=5)), function(c) {
+  # Apply model for the given cost value, use default kernel
+  predictions <- my_svm(df.train, df.val, c, "rbfdot")
+  # Reformat
+  predictions <- format_output(predictions)
+  # Calculate and return stats
+  CalcStats(df.val, predictions, c)
+}) %>%
+  bind_rows() %>%
+  rename(Cost = Data)
+head(stats.svm.new)
+
+stats.svm.new %>%
+  select(Cost, F1, Kappa, AUC) %>%
+  pivot_longer(cols = c("F1", "Kappa", "AUC"),
+               names_to = "Statistic",
+               values_to = "Value") %>%
+  group_by(Statistic) %>%
+  mutate(is_max = Value==max(Value)) %>%
+  ungroup() %>%
+  ggplot(aes(x=Cost, y=Value, color=Statistic,
+             label = ifelse(is_max, paste("Max at (", Cost, ",", round(Value,2), ")", sep=""), NA))) +
+  geom_label_repel(size=3, box.padding=1, fill="white", nudge_y = -.02, nudge_x = -5) +
+  geom_line() +
+  geom_vline(xintercept = 1,
+             color = "grey",
+             linetype = "dashed") + 
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "SVM Model Performance With Varying Cost Values")
+```
+
+```{r SaveSVMResults, echo=FALSE, include=FALSE}
+optimal_c <- stats.svm.new$Cost[as.numeric(which.max(stats.svm.new$AUC))]
+optimal_auc <- formattable::percent(max(stats.svm.new$AUC))
+optimal_f1 <- formattable::percent(max(stats.svm.new$F1))
+optimal_kappa <- formattable::percent(max(stats.svm.new$Kappa))
+
+old_c <- 1
+old_auc <- formattable::percent(stats.svm[3,"AUC"])
+old_f1 <- formattable::percent(stats.svm[3,"F1"])
+old_kappa <- formattable::percent(stats.svm[3,"Kappa"])
+```
+
+We can see that changing the cost parameter from `r old_c` to `r optimal_c` results in the following (marginal) improvements:
+
+-   AUC: from `r old_auc` to `r optimal_auc`
+-   F1: from `r old_f1` to `r optimal_f1`
+-   Kappa: from `r old_kappa` to `r optimal_kappa`
+
+However, since these improvements are so minimal, it may be best to keep the default cost value of 1 to avoid over-fitting.
+
+Additionally, the `kernel` parameter is used to map values to a higher dimension space in an attempt to find nonlinear relationships. The `rbfdot` (radial basis, which is based on a Gaussian curve) kernel function is used by default. Alternatives we can explore are `polydot` (polynomial), `tanhdot` (hyperbolic tangent sigmoid), and `vanilladot` (linear, meaning no transformation is applied). We iterate through these options below with our newly identified optimal cost parameter.
+
+```{r TuneSVM_Kernel}
+set.seed(-1)
+map(c("rbfdot", "polydot", "tanhdot", "vanilladot"), function(ktype) {
+  p <- my_svm(df.train, df.val, 1, ktype)
+  p <- format_output(p)
+  CalcStats(df.val, p, ktype)
+}) %>%
+  bind_rows() %>%
+  rename(Kernel = Data)
+```
+
+`polydot` and `vanilladot` perform equally well and the best (logically, a linear function is a first-order polynomial). `tanhdot` is by far the worst and clearly the wrong model to use.
+
+## Homogeneous Ensemble Model (Bagging)
+
+Bagging, short for bootstrap aggregating, is a homogeneous ensemble method that trains multiple models from different randomly sampled training sets and making predictions based on a popular vote of the models. This is especially useful for models that are sensitive to minor changes in the input data.
+
+First, we create 5 randomly sampled sets by using the holdover method (80% training, 20% testing) 5 times.
+
+```{r RandomSampleData}
+df <- df_list$df.NoInval
+set.seed(-1)
+# Initialize empty list
+rand_train_list <- list()
+nn <- 5 # number of datasets to generate
+for (ii in seq(nn)) {
+  # Generate random indices
+  rand_ind <- createDataPartition(df$DiffExpr, times=1, p=0.80, list=FALSE)
+  # Index df with randomly generated indices and add to list
+  rand_train_list <- append(rand_train_list, list(df[rand_ind,]))
+}
+```
+
+Next, we build 5 models each from these randomly generated datasets using Naive Bayes, Neural Network, and Support Vector Machine and store their predictions in a list. Note that we skip this exercise for kNN because it is a lazy learner that does not actually generate a "model."
+
+```{r TrainFromRandom}
+set.seed(123)
+models.nb <- Map(function(df_train) {
+  naiveBayes(x = select(df_train, -DiffExpr),
+             y = df_train$DiffExpr)
+}, rand_train_list)
+
+set.seed(123)
+models.nn <- Map(function(df_train) {
+  neuralnet(DiffExpr == "DE" ~ ., data=df_train, hidden=2)
+}, rand_train_list)
+
+set.seed(123)
+models.svm <- Map(function(df_train) {
+  ksvm(DiffExpr ~ ., data=df_train, C=1, kernel="vanilladot")
+}, rand_train_list)
+```
+
+Next, we define a helper function `get_mode()` to apply within `homog_predict()`, our homogeneous ensemble prediction function, to obtain the majority vote across each of the models.
+
+```{r HomogHelperFunctions}
+get_mode <- function(x) {
+  freq_tb <- table(x)
+  uniq <- unique(x)
+  mode <- uniq[which.max(freq_tb)]
+  return(mode)
+}
+homog_predict <- function(models, new_cases) {
+  # models: list of models to make predictions
+  # new_cases: data frame of new cases to feed into each model
+  
+  # Predictions is a list of N lists of size M
+  # N is the number of models
+  # M is the number of new cases
+  predictions <- lapply(models, function(m) {
+    predict(m, new_cases)
+  })
+  # For each new case, determine the majority vote from the n predictions
+  final_predictions <- data.frame(predictions) %>%
+    apply(MARGIN=1, FUN=get_mode)
+  return(final_predictions)
+}
+```
+
+Now, we can apply these functions to Naive Bayes, Neural Network, and Support Vector Machine models to obtain some statistics.
+
+```{r HomogEnsemblePredict}
+preds.nb <- homog_predict(models.nb, select(df.val, -DiffExpr)) %>% format_output()
+preds.nn <- homog_predict(models.nn, select(df.val, -DiffExpr)) %>% format_output()
+preds.svm <- homog_predict(models.svm, select(df.val, -DiffExpr)) %>% format_output()
+
+stats.homog <- Map(CalcStats, list(df.val), list(preds.nb, preds.nn, preds.svm), list("Naive Bayes", "Neural Network", "SVM")) %>%
+  bind_rows()
+stats.homog %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="Bagging Results", align="l")
+```
+
+We will compare these back to the original (pre-tuning, non-ensemble) statistics in the final section, but at a glance, this does not appear to have granted much improvement.
+
+## Heterogeneous Ensemble Model
+
+We can also build a heterogeneous ensemble model using all 3 new models (excluding Naive Bayes, as we suspect this model is less performant than the others) and taking the majority result. Integrating predictions from multiple models may yield a better result, especially in our case, where no model appears to perform best in all cases.
+
+```{r HeterogEnsembleModel}
+my_ensemble <- function(df_train, df_val) {
+  # m.nb <- naiveBayes(x = select(df_train, -DiffExpr),
+  #                    y = df_train$DiffExpr)
+  # p.nb <- predict(m.nb, select(df_val, -DiffExpr), type="raw")[,"DE"] %>%
+  #   format_output()
+  
+  p.knn <- knn(train = select(df_train, -DiffExpr),
+               test = select(df_val, -DiffExpr),
+               cl = df_train$DiffExpr,
+               k = optimal_k) %>%
+    format_output()
+  
+  m.nn <- neuralnet(DiffExpr == "DE" ~ ., data=df_train, hidden=2)
+  p.nn <- predict(m.nn, select(df_val, -DiffExpr)) %>%
+    format_output()
+  
+  m.svm <- ksvm(DiffExpr ~ ., data=df_train, C=1, kernel="vanilladot")
+  p.svm <- predict(m.svm, select(df_val, -DiffExpr)) %>%
+    format_output()
+  
+  final_predictions <- data.frame(p.knn, p.nn, p.svm) %>%
+    apply(MARGIN=1, FUN=get_mode)
+  
+  return(final_predictions)
+}
+
+set.seed(123)
+preds.ensemble <- my_ensemble(df.train, df.val) %>% format_output()
+stats.ensemble <- CalcStats(df.val, preds.ensemble, "Ensemble") %>% as.data.frame()
+stats.ensemble %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="Heterogeneous Ensemble", align="l", row.names=FALSE)
+```
+
+We will compare this performance back to the other models in the final section. Before that, we can demonstrate the use of this model on some randomly generated inputs:
+
+```{r MakePrediction}
+new_cases <- data.frame(
+  FoldChange = runif(5),
+  AvgReadPerKB = runif(5),
+  GC = runif(5),
+  DiffExpr = NA
+) %>%
+  mutate(GCFromAvg = abs(GC - 0.5), .after="GC")
+start.time <- Sys.time()
+predictions <- my_ensemble(df.train, new_cases)
+elapsed <- Sys.time() - start.time
+cbind(select(new_cases, -DiffExpr), predictions)
+```
+
+It took a total of `r round(as.numeric(elapsed),2)` seconds to both train the ensemble model using our training set and make predictions on 5 new cases.
+
+# Final Statistics and Learnings
+
+Below, we have compiled the statistical metrics of performance for each model we generated throughout this report. We started with 4 models with default, standard, un-tuned parameters for Naive Bayes (NB), k-Nearest Neighbors (kNN), Neural Network (NN), and Support Vector Machine (SVM). Next, we tuned parameters for kNN (k value of `r optimal_k`), NN (2 hidden nodes), and SVM (`vanilladot` kernel).
+
+We then built a homogeneous ensemble using a bagging approach by randomly sampling 80% of the data 5 times to make a training set to build 5 NB models, 5 NN models, and 5 SVM models with tuned parameters. We can see a bit of improvement for the NN and SVM which is a good sign, as it indicates we are not over-fitting based on our parameter selection and that our models are fairly stable
+
+Finally, we combine kNN, NN, and SVM with tuned parameters to build a 3x heterogeneous ensemble model. This model turns out to have the best performance! This illustrates the power of ensembles: they further reduce the chance of overfitting by ensuring no bias from one particular model dominates, and they reduce the skewing effect that randomness may have on unstable learners. However, it is still not a huge leap in improvement, suggesting that the detection of differentially expressed genes is an inherently challenging problem in bioinformatics.
+
+```{r FinalStats, echo=FALSE}
+stats.all <- rbind(data.frame(Approach = "NB Default", stats.nb[3, c("AUC", "F1", "Kappa")]),
+                   data.frame(Approach = "kNN Default", stats.knn[3, c("AUC", "F1", "Kappa")]),
+                   data.frame(Approach = "NN Default", stats.nn[3, c("AUC", "F1", "Kappa")]),
+                   data.frame(Approach = "SVM Default", stats.svm[3, c("AUC", "F1", "Kappa")]),
+                   data.frame(Approach = c("NB, 5x Bagging", "NN Tuned, 5x Bagging", "SVM Tuned, 5x Bagging"), 
+                              stats.homog[,c("AUC", "F1", "Kappa")]),
+                   data.frame(Approach = "3x Ensemble Tuned", stats.ensemble[, c("AUC", "F1", "Kappa")]))
+stats.all %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(.))) %>%
+  kable(digits=2, caption="Final Statistics", align="l", row.names=FALSE)
+```
+
+We learned throughout this process that the Naive Bayes classifer
+
+# References
+
+Dou, Y., Guo, X., Yuan, L., Holding, D. R., & Zhang, C. (2015). Differential Expression Analysis in RNA-Seq by a Naive Bayes Classifier with Local Normalization. BioMed research international, 2015, 789516. <https://doi.org/10.1155/2015/789516>

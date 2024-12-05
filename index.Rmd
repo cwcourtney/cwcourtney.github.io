@@ -11,9 +11,10 @@ output: html_document
 -   [kNN Regression: NYC Taxi Tips](./MachineLearning/kNN_TaxiTips.html)
 -   [kNN Regression: Abalone Shucked Weight](./MachineLearning/kNN_Abalone.html)
 -   [kNN Classification: Country Development Status](./MachineLearning/kNN_CountryStatus.html)
+-   [Ensemble: Differential Gene Expression](./MachineLearning/Ensemble_DiffExpr.html)
 
 # Bioinformatics Projects
 
 -   [Differential Expression Analysis with DESeq2](./BINF/231004_DiffExpAnalysis/methodsResults.html)
 -   [Variant Calling with DeepVariant](./BINF/231124_VariantCalling/MethodsVariantCalling.html)
--   [scRNAseq Workflow Exploration](./BINF/241204_scRNAseq/scRNAseq_workflow.html) (*in work*)
+-   [scRNAseq Workflow Exploration](./BINF/241204_scRNAseq/scRNAseq_workflow.html)
