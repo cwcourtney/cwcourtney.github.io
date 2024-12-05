@@ -996,8 +996,6 @@ stats.all %>%
   kable(digits=2, caption="Final Statistics", align="l", row.names=FALSE)
 ```
 
-We learned throughout this process that the Naive Bayes classifer
-
 # References
 
 Dou, Y., Guo, X., Yuan, L., Holding, D. R., & Zhang, C. (2015). Differential Expression Analysis in RNA-Seq by a Naive Bayes Classifier with Local Normalization. BioMed research international, 2015, 789516. <https://doi.org/10.1155/2015/789516>
